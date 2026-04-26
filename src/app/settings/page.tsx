@@ -75,8 +75,29 @@ export default function SettingsPage() {
             alert("Please fill in both password fields.");
             return;
         }
-        alert("Password updated successfully!");
-        setPasswordData({ current: "", new: "" });
+        
+        try {
+            const res = await fetch("/api/user/password", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    currentPassword: passwordData.current,
+                    newPassword: passwordData.new
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Password updated successfully!");
+                setPasswordData({ current: "", new: "" });
+            } else {
+                alert(data.message || "Failed to update password");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred. Please try again.");
+        }
     };
 
     const toggleNotification = (id: string) => {
