@@ -79,19 +79,17 @@ export default function Home() {
                 </div>
 
                 {/* Floating Badge */}
-                <Link href="/subscription" className="absolute -bottom-6 -left-6 block group/badge z-20">
-                  <div className="bg-white/90 dark:bg-gray-800/90 p-4 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 backdrop-blur-md group-hover/badge:scale-105 group-hover/badge:border-primary-main transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center group-hover/badge:bg-primary-main group-hover/badge:text-white transition-colors">
-                        <Heart className="w-5 h-5 text-green-600 dark:text-green-400 group-hover/badge:text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Emergency Support</p>
-                        <p className="text-[10px] font-bold text-primary-main uppercase tracking-widest mt-0.5">Upgrade to Access 24/7</p>
-                      </div>
+                <div className="absolute -bottom-6 -left-6 bg-glass p-4 rounded-2xl shadow-lg border border-white/40 dark:border-gray-700 backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <Heart className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">Emergency Support</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-300">24/7 Available in Metro Cities</p>
                     </div>
                   </div>
-                </Link>
+                </div>
               </motion.div>
             </div>
           </div>
@@ -217,9 +215,7 @@ export default function Home() {
             <Heart className="w-16 h-16 mx-auto text-primary-main mb-6 animate-bounce" />
             <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6 text-gray-900 dark:text-white">Give Your Pet the Love They Deserve ❤️</h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-10">Join thousands of happy pet parents today.</p>
-            <Link href="/signup">
-              <Button size="lg" className="px-12 py-6 text-lg rounded-full shadow-xl shadow-primary-main/30">Get Started Now</Button>
-            </Link>
+            <Button size="lg" className="px-12 py-6 text-lg rounded-full shadow-xl shadow-primary-main/30">Get Started Now</Button>
           </div>
         </section>
       </main>

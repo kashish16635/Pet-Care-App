@@ -14,10 +14,7 @@ export default function WalletPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-    const [showPayModal, setShowPayModal] = useState(false);
-    const [transactionAmount, setTransactionAmount] = useState("");
-    const [sitterName, setSitterName] = useState("");
+
     const [paymentMethod, setPaymentMethod] = useState("upi"); // 'upi' or 'card'
 
     const fetchData = () => {
@@ -36,22 +33,18 @@ export default function WalletPage() {
         }
     }, [status]);
 
-    const handleTransaction = async (type: string, amount: string, title?: string) => {
-        if (!amount || isNaN(parseFloat(amount))) return;
+    const handleAddFunds = async () => {
+        if (!amountToAdd || isNaN(parseFloat(amountToAdd))) return;
         setIsSubmitting(true);
         try {
             const res = await fetch("/api/wallet", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount, type, title })
+                body: JSON.stringify({ amount: amountToAdd })
             });
             if (res.ok) {
                 setShowAddModal(false);
-                setShowWithdrawModal(false);
-                setShowPayModal(false);
                 setAmountToAdd("");
-                setTransactionAmount("");
-                setSitterName("");
                 fetchData();
             }
         } catch (error) {
@@ -100,20 +93,14 @@ export default function WalletPage() {
 
                     {/* Quick Actions */}
                     <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                        <div 
-                            onClick={() => setShowWithdrawModal(true)}
-                            className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group"
-                        >
+                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group">
                             <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <ArrowDownLeft className="text-green-600 dark:text-green-400 w-6 h-6" />
                             </div>
                             <h3 className="font-bold text-gray-900 dark:text-white">Withdraw</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">To Bank Account</p>
                         </div>
-                        <div 
-                            onClick={() => setShowPayModal(true)}
-                            className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group"
-                        >
+                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group">
                             <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <ArrowUpRight className="text-blue-600 dark:text-blue-400 w-6 h-6" />
                             </div>
@@ -237,122 +224,10 @@ export default function WalletPage() {
                             <div className="flex gap-4 mt-8">
                                 <Button 
                                     className="flex-1 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary-main/20"
-                                    onClick={() => handleTransaction('Deposit', amountToAdd)}
+                                    onClick={handleAddFunds}
                                     disabled={isSubmitting || !amountToAdd}
                                 >
                                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Pay ₹${amountToAdd || '0'}`}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Withdraw Modal */}
-                {showWithdrawModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-green-100/20 flex items-center justify-center text-green-600">
-                                        <ArrowDownLeft className="w-6 h-6" />
-                                    </div>
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Withdraw</h3>
-                                </div>
-                                <button onClick={() => setShowWithdrawModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount to Withdraw</label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">₹</span>
-                                        <input 
-                                            type="number" 
-                                            value={transactionAmount}
-                                            onChange={(e) => setTransactionAmount(e.target.value)}
-                                            placeholder="0.00"
-                                            className="w-full h-14 pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-xl font-black focus:border-primary-main focus:outline-none transition-all dark:text-white"
-                                        />
-                                    </div>
-                                    <p className="text-[10px] text-gray-400 mt-2 italic">Available: ₹{balance.toLocaleString()}</p>
-                                </div>
-
-                                <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Select Bank Account</label>
-                                    <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold text-blue-600 uppercase">HDFC</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-900 dark:text-white">HDFC Bank •••• 4291</p>
-                                            <p className="text-[9px] text-gray-400">Primary Account</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 mt-8">
-                                <Button 
-                                    className="flex-1 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg bg-green-600 hover:bg-green-700 text-white"
-                                    onClick={() => handleTransaction('Withdraw', transactionAmount)}
-                                    disabled={isSubmitting || !transactionAmount || parseFloat(transactionAmount) > balance}
-                                >
-                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Withdraw ₹${transactionAmount || '0'}`}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Pay Sitter Modal */}
-                {showPayModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-100/20 flex items-center justify-center text-blue-600">
-                                        <ArrowUpRight className="w-6 h-6" />
-                                    </div>
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Pay Sitter</h3>
-                                </div>
-                                <button onClick={() => setShowPayModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Sitter Name or ID</label>
-                                    <input 
-                                        type="text" 
-                                        value={sitterName}
-                                        onChange={(e) => setSitterName(e.target.value)}
-                                        placeholder="Enter Sitter Name"
-                                        className="w-full h-12 px-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-primary-main focus:outline-none dark:text-white"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount to Pay</label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">₹</span>
-                                        <input 
-                                            type="number" 
-                                            value={transactionAmount}
-                                            onChange={(e) => setTransactionAmount(e.target.value)}
-                                            placeholder="0.00"
-                                            className="w-full h-14 pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-xl font-black focus:border-primary-main focus:outline-none transition-all dark:text-white"
-                                        />
-                                    </div>
-                                    <p className="text-[10px] text-gray-400 mt-2 italic">Available: ₹{balance.toLocaleString()}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4 mt-8">
-                                <Button 
-                                    className="flex-1 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg bg-blue-600 hover:bg-blue-700 text-white"
-                                    onClick={() => handleTransaction('Payment', transactionAmount, `Payment to ${sitterName || 'Sitter'}`)}
-                                    disabled={isSubmitting || !transactionAmount || !sitterName || parseFloat(transactionAmount) > balance}
-                                >
-                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Send ₹${transactionAmount || '0'}`}
                                 </Button>
                             </div>
                         </div>

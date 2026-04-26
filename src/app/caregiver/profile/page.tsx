@@ -6,36 +6,7 @@ import { useRouter } from "next/navigation";
 import { CaregiverNavbar } from "@/components/CaregiverNavbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { Briefcase, MapPin, DollarSign, User as UserIcon, Search } from "lucide-react";
-
-const INDIAN_CITIES = [
-  "Mumbai, Maharashtra", "Delhi, Delhi", "Bangalore, Karnataka", "Hyderabad, Telangana",
-  "Ahmedabad, Gujarat", "Chennai, Tamil Nadu", "Kolkata, West Bengal", "Surat, Gujarat",
-  "Pune, Maharashtra", "Jaipur, Rajasthan", "Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh",
-  "Nagpur, Maharashtra", "Indore, Madhya Pradesh", "Thane, Maharashtra", "Bhopal, Madhya Pradesh",
-  "Visakhapatnam, Andhra Pradesh", "Pimpri-Chinchwad, Maharashtra", "Patna, Bihar", "Vadodara, Gujarat",
-  "Ghaziabad, Uttar Pradesh", "Ludhiana, Punjab", "Agra, Uttar Pradesh", "Nashik, Maharashtra",
-  "Faridabad, Haryana", "Meerut, Uttar Pradesh", "Rajkot, Gujarat", "Kalyan-Dombivli, Maharashtra",
-  "Vasai-Virar, Maharashtra", "Varanasi, Uttar Pradesh", "Srinagar, Jammu and Kashmir", "Aurangabad, Maharashtra",
-  "Dhanbad, Jharkhand", "Amritsar, Punjab", "Navi Mumbai, Maharashtra", "Allahabad, Uttar Pradesh",
-  "Ranchi, Jharkhand", "Howrah, West Bengal", "Coimbatore, Tamil Nadu", "Jabalpur, Madhya Pradesh",
-  "Gwalior, Madhya Pradesh", "Vijayawada, Andhra Pradesh", "Jodhpur, Rajasthan", "Madurai, Tamil Nadu",
-  "Raipur, Chhattisgarh", "Kota, Rajasthan", "Guwahati, Assam", "Chandigarh, Chandigarh",
-  "Solapur, Maharashtra", "Hubli-Dharwad, Karnataka", "Bareilly, Uttar Pradesh", "Moradabad, Uttar Pradesh",
-  "Mysore, Karnataka", "Gurgaon, Haryana", "Aligarh, Uttar Pradesh", "Jalandhar, Punjab",
-  "Tiruchirappalli, Tamil Nadu", "Bhubaneswar, Odisha", "Salem, Tamil Nadu", "Warangal, Telangana",
-  "Mira-Bhayandar, Maharashtra", "Thiruvananthapuram, Kerala", "Bhiwandi, Maharashtra", "Saharanpur, Uttar Pradesh",
-  "Guntur, Andhra Pradesh", "Bikaner, Rajasthan", "Amravati, Maharashtra", "Noida, Uttar Pradesh",
-  "Jamshedpur, Jharkhand", "Bhilai, Chhattisgarh", "Cuttack, Odisha", "Firozabad, Uttar Pradesh",
-  "Kochi, Kerala", "Nellore, Andhra Pradesh", "Bhavnagar, Gujarat", "Dehradun, Uttarakhand",
-  "Durgapur, West Bengal", "Asansol, West Bengal", "Rourkela, Odisha", "Nanded, Maharashtra",
-  "Kolhapur, Maharashtra", "Ajmer, Rajasthan", "Akola, Maharashtra", "Gulbarga, Karnataka",
-  "Jamnagar, Gujarat", "Ujjain, Madhya Pradesh", "Loni, Uttar Pradesh", "Siliguri, West Bengal",
-  "Jhansi, Uttar Pradesh", "Ulhasnagar, Maharashtra", "Jammu, Jammu and Kashmir", "Sangli-Miraj & Kupwad, Maharashtra",
-  "Mangalore, Karnataka", "Erode, Tamil Nadu", "Belgaum, Karnataka", "Ambattur, Tamil Nadu",
-  "Tirunelveli, Tamil Nadu", "Malegaon, Maharashtra", "Gaya, Bihar", "Jalgaon, Maharashtra",
-  "Udaipur, Rajasthan", "Maheshtala, West Bengal"
-];
+import { Briefcase, MapPin, DollarSign, User as UserIcon } from "lucide-react";
 
 export default function CaregiverProfile() {
     const { data: session, status } = useSession();
@@ -52,9 +23,6 @@ export default function CaregiverProfile() {
         price: "",
         about: ""
     });
-
-    const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -161,53 +129,16 @@ export default function CaregiverProfile() {
                                         </select>
                                     </div>
 
-                                     <div className="relative">
+                                    <div>
                                         <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-2">
                                             <MapPin className="w-4 h-4 text-primary-main" /> Service Location
                                         </label>
                                         <input
                                             type="text"
                                             value={formData.location}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setFormData({...formData, location: val});
-                                                if (val.length > 0) {
-                                                    const filtered = INDIAN_CITIES.filter(city => 
-                                                        city.toLowerCase().includes(val.toLowerCase())
-                                                    ).slice(0, 5);
-                                                    setLocationSuggestions(filtered);
-                                                    setShowSuggestions(true);
-                                                } else {
-                                                    setShowSuggestions(false);
-                                                }
-                                            }}
-                                            onFocus={() => {
-                                                if (formData.location.length > 0) setShowSuggestions(true);
-                                            }}
-                                            onBlur={() => {
-                                                // Small timeout to allow clicking the suggestion
-                                                setTimeout(() => setShowSuggestions(false), 200);
-                                            }}
+                                            onChange={(e) => setFormData({...formData, location: e.target.value})}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-main focus:border-transparent outline-none transition-all"
-                                            placeholder="e.g. Ujjain, Madhya Pradesh"
                                         />
-                                        {showSuggestions && locationSuggestions.length > 0 && (
-                                            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden">
-                                                {locationSuggestions.map((city, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        onClick={() => {
-                                                            setFormData({...formData, location: city});
-                                                            setShowSuggestions(false);
-                                                        }}
-                                                        className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-200 flex items-center gap-2"
-                                                    >
-                                                        <Search className="w-3.5 h-3.5 text-gray-400" />
-                                                        {city}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div>

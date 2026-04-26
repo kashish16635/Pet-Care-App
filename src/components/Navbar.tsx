@@ -52,24 +52,6 @@ export function Navbar() {
         }
     };
 
-    const deleteNotification = async (id: string) => {
-        try {
-            await fetch(`/api/notifications?id=${id}`, { method: "DELETE" });
-            setNotifications(prev => prev.filter(n => n.id !== id));
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const deleteAllRead = async () => {
-        try {
-            await fetch("/api/notifications", { method: "DELETE" });
-            setNotifications(prev => prev.filter(n => !n.read));
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     React.useEffect(() => {
         if (isNotificationsOpen || isDrawerOpen) {
             markAsRead();
@@ -184,23 +166,12 @@ export function Navbar() {
                                                     <div className="max-h-80 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800">
                                                         {notifications.length > 0 ? (
                                                             notifications.map((n) => (
-                                                                <div key={n.id} className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-3 group relative ${!n.read ? 'bg-primary-light/5' : ''}`}>
+                                                                <div key={n.id} className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-3 ${!n.read ? 'bg-primary-light/5' : ''}`}>
                                                                     <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${n.type === 'Success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                                                                         {n.type === 'Success' ? <PawPrint className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                                                                     </div>
-                                                                    <div className="flex-1">
-                                                                        <div className="flex justify-between items-start">
-                                                                            <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight mb-0.5">{n.title}</p>
-                                                                            <button 
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    deleteNotification(n.id);
-                                                                                }}
-                                                                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 rounded-md transition-all"
-                                                                            >
-                                                                                <X className="w-3 h-3" />
-                                                                            </button>
-                                                                        </div>
+                                                                    <div>
+                                                                        <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight mb-0.5">{n.title}</p>
                                                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{n.message}</p>
                                                                         <p className="text-[9px] text-gray-400 mt-1 font-medium">{new Date(n.createdAt).toLocaleDateString()}</p>
                                                                     </div>
@@ -433,7 +404,7 @@ export function Navbar() {
                                         {notifications.map((n: any, index: number) => (
                                             <div 
                                                 key={n?.id || `unotif-${index}`} 
-                                                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all flex gap-4 group ${!n?.read ? 'bg-primary-light/5 border-l-4 border-primary-main' : ''}`}
+                                                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all flex gap-4 ${!n?.read ? 'bg-primary-light/5 border-l-4 border-primary-main' : ''}`}
                                             >
                                                 <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center shadow-sm ${n?.type === 'Success' || n?.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                                                     {n?.type === 'Success' || n?.type === 'success' ? <PawPrint className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
@@ -441,18 +412,7 @@ export function Navbar() {
                                                 <div className="flex-1">
                                                     <div className="flex justify-between items-start mb-1">
                                                         <h4 className="text-[13px] font-black text-gray-900 dark:text-white uppercase tracking-tight">{n?.title || n?.type || "Update"}</h4>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-[9px] font-bold text-gray-400">{n?.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now"}</span>
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    deleteNotification(n.id);
-                                                                }}
-                                                                className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 rounded-lg transition-all"
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
+                                                        <span className="text-[9px] font-bold text-gray-400">{n?.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now"}</span>
                                                     </div>
                                                     <p className="text-[12px] text-gray-600 dark:text-gray-400 leading-relaxed">{n?.message || "No details available"}</p>
                                                     {!n.read && (
