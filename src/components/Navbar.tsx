@@ -87,7 +87,7 @@ export function Navbar() {
         .toUpperCase() || "U";
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 dark:bg-gray-900/80 dark:border-gray-800">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 dark:bg-gray-900/80 dark:border-gray-800" suppressHydrationWarning>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
@@ -290,12 +290,12 @@ export function Navbar() {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-4 ml-4">
+                            <div className="flex items-center gap-4 ml-4" suppressHydrationWarning>
                                 <Link href="/login">
-                                    <Button variant="ghost" size="sm" className="font-bold text-[13px]">Log in</Button>
+                                    <Button variant="ghost" size="sm" className="font-bold text-[13px]" suppressHydrationWarning>Log in</Button>
                                 </Link>
                                 <Link href="/signup">
-                                    <Button size="sm" className="bg-gradient-brand font-bold text-[13px] px-6">Sign Up</Button>
+                                    <Button size="sm" className="bg-gradient-brand font-bold text-[13px] px-6" suppressHydrationWarning>Sign Up</Button>
                                 </Link>
                             </div>
                         )}
