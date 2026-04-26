@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { CalendarHeart, MapPin, Clock, CreditCard, ChevronRight, Bell, Loader2, Video } from "lucide-react";
+import { CalendarHeart, MapPin, Clock, CreditCard, ChevronRight, Bell, Loader2, Video, X, Crown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 function DashboardContent() {
     const searchParams = useSearchParams();
@@ -17,6 +18,7 @@ function DashboardContent() {
     
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
     const fetchDashboardData = () => {
         fetch("/api/dashboard")
@@ -24,6 +26,17 @@ function DashboardContent() {
             .then(d => {
                 setData(d);
                 setLoading(false);
+                
+                // Show upgrade prompt if user has 3+ total bookings and isn't pro
+                const totalBookings = (d.pastBookings?.length || 0) + (d.upcomingBooking ? 1 : 0);
+                if (totalBookings >= 3) {
+                    // Only show once per session to avoid annoyance
+                    const hasSeen = sessionStorage.getItem("hasSeenUpgradePrompt");
+                    if (!hasSeen) {
+                        setShowUpgradePrompt(true);
+                        sessionStorage.setItem("hasSeenUpgradePrompt", "true");
+                    }
+                }
             })
             .catch(err => {
                 console.error(err);
@@ -253,13 +266,66 @@ function DashboardContent() {
                     </section>
                 </div>
             </div>
+            {/* Upgrade Modal */}
+            <AnimatePresence>
+                {showUpgradePrompt && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowUpgradePrompt(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-lg bg-white dark:bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/20"
+                        >
+                            <div className="absolute top-0 right-0 p-6">
+                                <button onClick={() => setShowUpgradePrompt(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
+
+                            <div className="p-10 text-center">
+                                <div className="w-20 h-20 bg-gradient-brand rounded-3xl mx-auto flex items-center justify-center shadow-lg shadow-primary-main/20 mb-8 rotate-3">
+                                    <Crown className="w-10 h-10 text-white" />
+                                </div>
+                                
+                                <h3 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-none mb-4">You're a Regular! 🐾</h3>
+                                <p className="text-gray-500 dark:text-gray-400 font-medium mb-8">
+                                    Since you've made { (data.pastBookings?.length || 0) + (data.upcomingBooking ? 1 : 0) } bookings, why not upgrade to **Pro**? Get unlimited bookings, zero service fees, and priority support.
+                                </p>
+
+                                <div className="space-y-3">
+                                    <Link href="/subscription" onClick={() => setShowUpgradePrompt(false)}>
+                                        <Button className="w-full py-7 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-main/20">Upgrade Now — Save 20%</Button>
+                                    </Link>
+                                    <button 
+                                        onClick={() => setShowUpgradePrompt(false)}
+                                        className="w-full py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                    >
+                                        Maybe Later
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Background decoration */}
+                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-main/5 rounded-full blur-3xl" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary-main/5 rounded-full blur-3xl" />
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }
 
 export default function DashboardPage() {
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans flex flex-col">
+        <div className="min-h-screen bg-background-soft font-sans flex flex-col">
             <Navbar />
             <Suspense fallback={
                 <div className="flex-1 flex items-center justify-center p-24">

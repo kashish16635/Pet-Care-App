@@ -11,9 +11,9 @@
   --color-secondary-main: #14b8a6;
   --color-secondary-dark: #0f766e;
 
-  --color-background-soft: #fafaf9;
-  --color-text-main: #1c1917;
-  --color-text-light: #57534e;
+  --color-background-soft: var(--background-soft);
+  --color-text-main: var(--foreground);
+  --color-text-light: #64748b;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -21,12 +21,14 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1c1917;
+  --background-soft: #fafaf9;
+  --foreground: #0f172a;
 }
 
 .dark {
-  --background: #1c1917;
-  --foreground: #fafaf9;
+  --background: #0b0f1a;
+  --background-soft: #111827;
+  --foreground: #f8fafc;
 }
 
 body {
@@ -37,24 +39,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@utility bg-card {
+  background-color: #ffffff;
+  @variant dark {
+    background-color: #1a202c;
+  }
+}
+
 /* Glassmorphism utility */
 @utility bg-glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .dark .bg-glass {
-  background: rgba(17, 24, 39, 0.7) !important;
+  background: rgba(17, 24, 39, 0.75) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .bg-glass {
-    background: rgba(17, 24, 39, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
 }
 
 /* Base custom gradients */

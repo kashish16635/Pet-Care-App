@@ -41,3 +41,28 @@ export async function PUT() {
         return NextResponse.json({ error: "Failed" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get("id");
+
+        if (id) {
+            await prisma.notification.delete({
+                where: { id, userId: (session.user as any).id }
+            });
+        } else {
+            // Delete all read notifications if no ID provided
+            await prisma.notification.deleteMany({
+                where: { userId: (session.user as any).id, read: true }
+            });
+        }
+        
+        return NextResponse.json({ success: true });
+    } catch(err) {
+        return NextResponse.json({ error: "Failed to delete notification" }, { status: 500 });
+    }
+}

@@ -28,21 +28,25 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { amount } = body;
+        const { amount, type, title } = body;
         const userId = (session.user as any).id;
+
+        const numAmount = parseFloat(amount);
+        // Withdrawals and Payments should be negative
+        const finalAmount = (type === 'Withdraw' || type === 'Payment') ? -Math.abs(numAmount) : Math.abs(numAmount);
 
         const transaction = await prisma.transaction.create({
             data: {
                 userId,
-                amount: parseFloat(amount),
-                type: 'Deposit',
-                title: 'Funds Added to Wallet',
+                amount: finalAmount,
+                type: type || 'Deposit',
+                title: title || (type === 'Withdraw' ? 'Withdrawal to Bank' : type === 'Payment' ? 'Payment to Sitter' : 'Funds Added to Wallet'),
                 status: 'Completed'
             }
         });
 
         return NextResponse.json(transaction);
     } catch(err) {
-        return NextResponse.json({ error: "Failed to add funds" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to process transaction" }, { status: 500 });
     }
 }

@@ -81,7 +81,7 @@ export default function HistoryPage() {
     if (status === "loading") return null;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans flex flex-col">
+        <div className="min-h-screen bg-background-soft font-sans flex flex-col">
             <Navbar />
 
             <main className="flex-1 pt-24 pb-12 w-full max-w-5xl mx-auto px-4 sm:px-6">

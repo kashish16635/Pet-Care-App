@@ -50,3 +50,4 @@ build_err2.txt
 build_log.txt
 build_log2.txt
 tsc_errors.txt
+*.db

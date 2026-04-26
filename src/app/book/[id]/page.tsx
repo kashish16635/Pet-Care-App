@@ -23,7 +23,18 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         instructions: ""
     });
 
-    const handleNext = () => setStep(step + 1);
+    const handleNext = () => {
+        if (step === 1 && bookingData.date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(bookingData.date);
+            if (selected < today) {
+                alert("Please select a current or future date. Past dates are not valid for bookings.");
+                return;
+            }
+        }
+        setStep(step + 1);
+    };
     const handleBack = () => setStep(step - 1);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -107,6 +118,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                             <input
                                                 type="date"
+                                                min={new Date().toISOString().split('T')[0]}
                                                 value={bookingData.date}
                                                 onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
                                                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none dark:text-white"

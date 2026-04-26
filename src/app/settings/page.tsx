@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
@@ -176,7 +177,9 @@ export default function SettingsPage() {
                             </div>
                             <h4 className="text-xl font-black uppercase tracking-tight mb-2 relative z-10">Pro Account</h4>
                             <p className="text-xs font-bold text-white/80 uppercase tracking-widest mb-6 relative z-10">Unlock premium pet services</p>
-                            <Button className="w-full bg-white text-primary-main font-black rounded-2xl py-4 shadow-xl hover:bg-gray-50 relative z-10">Upgrade Now</Button>
+                            <Link href="/subscription">
+                                <Button className="w-full bg-white text-primary-main font-black rounded-2xl py-4 shadow-xl hover:bg-gray-50 relative z-10">Upgrade Now</Button>
+                            </Link>
                         </div>
                     </div>
 
