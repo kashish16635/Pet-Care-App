@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:C:/Users/jaink/.gemini/antigravity/scratch/pet-care-platform/prisma/dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  image         String?
+  phone         String?
+  address       String?
+  city          String?
+  pinCode       String?
+  walletBalance Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  pets          Pet[]
+  bookings      Booking[]
+  transactions  Transaction[]
+  notifications Notification[]
+  
+  role          String    @default("USER")
+  sitterProfile Sitter?
+  reviews       Review[]
+  sentMessages      Message[] @relation("SentMessages")
+  receivedMessages  Message[] @relation("ReceivedMessages")
+}
+
+model Pet {
+  id              String   @id @default(cuid())
+  name            String
+  type            String   // e.g. Dog, Cat
+  breed           String?
+  age             String?
+  diet            String?
+  medicalNotes    String?
+  image           String?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  bookings        Booking[]
+}
+
+model Sitter {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  location    String
+  distance    String
+  rating      Float
+  reviews     Int
+  price       Int
+  about       String
+  verified    Boolean  @default(false)
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    Booking[]
+  
+  userId      String?  @unique
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewsList Review[]
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  service     String
+  date        String
+  time        String
+  instructions String?
+  status      String   @default("Pending") // Pending, Confirmed, Completed, Cancelled
+  totalPrice  Int
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  petId       String?
+  pet         Pet?     @relation(fields: [petId], references: [id])
+  sitterId    String
+  sitter      Sitter   @relation(fields: [sitterId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  review      Review?
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  type        String   // "Credit", "Debit"
+  amount      Int
+  status      String   @default("Completed")
+  icon        String?  // MapPin, Clock, ArrowDownLeft
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  type        String   // "Success", "Message", "Alert", "Reminder"
+  read        Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sitterId  String
+  sitter    Sitter   @relation(fields: [sitterId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}

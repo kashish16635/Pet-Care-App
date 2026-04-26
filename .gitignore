@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scratch and logs
+*.txt
+scratch/
+test-prisma.js
+prisma_out.txt
+build_err.txt
+build_err2.txt
+build_log.txt
+build_log2.txt
+tsc_errors.txt
