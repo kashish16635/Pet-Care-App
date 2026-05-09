@@ -63,7 +63,7 @@ export async function PUT(
             where: { id: updatedBooking.sitterId }
         });
         
-        if (sitter) {
+        if (sitter && sitter.userId) {
             await prisma.notification.create({
                 data: {
                     title: "Booking Cancelled",

@@ -13,10 +13,13 @@ export default function VideoCallPage({ params }: { params: Promise<{ bookingId:
     const { data: session, status } = useSession();
     const [loading, setLoading] = useState(true);
 
+    // 1. Unique Room Name: Har booking ke liye ek alag private room
     const roomName = `PawsAndCare_Booking_${bookingId}`;
+    // User ka naam NextAuth session se laya gaya hai
     const displayName = session?.user?.name || "User";
 
     useEffect(() => {
+        // Security: Check karo ki user logged in hai ya nahi
         if (status === "unauthenticated") {
             router.push("/login");
         } else if (status === "authenticated") {
@@ -65,6 +68,11 @@ export default function VideoCallPage({ params }: { params: Promise<{ bookingId:
 
             {/* Video Container */}
             <div className="flex-1 relative bg-black">
+                {/* 
+                    2. Jitsi Integration Logic: 
+                    Iframe ke zariye Jitsi Meet ka call load ho raha hai.
+                    Hum URL mein 'roomName' aur 'displayName' bhej rahe hain.
+                */}
                 <iframe
                     src={`https://meet.jit.si/${roomName}#userInfo.displayName="${displayName}"&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.prejoinPageEnabled=false`}
                     allow="camera; microphone; display-capture; autoplay; clipboard-write"

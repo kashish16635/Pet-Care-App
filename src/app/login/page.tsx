@@ -5,12 +5,13 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { PawPrint, Mail, Lock } from "lucide-react";
+import { PawPrint, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,7 +32,7 @@ export default function LoginPage() {
             setError(res.error);
             setLoading(false);
         } else {
-            router.push("/dashboard");
+            router.push("/");
             router.refresh();
         }
     };
@@ -80,17 +81,24 @@ export default function LoginPage() {
                         <div>
                             <div className="flex justify-between items-center mb-2">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-                                <Link href="#" className="text-sm font-medium text-primary-main hover:underline">Forgot?</Link>
+                                <Link href="/forgot-password" className="text-sm font-medium text-primary-main hover:underline">Forgot?</Link>
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input 
-                                    type="password" 
+                                    type={showPassword ? "text" : "password"} 
                                     name="password"
                                     required
                                     placeholder="••••••••" 
-                                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none transition-all dark:text-white" 
+                                    className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none transition-all dark:text-white" 
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         </div>
 

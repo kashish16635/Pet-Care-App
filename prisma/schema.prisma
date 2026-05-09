@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:C:/Users/jaink/.gemini/antigravity/scratch/pet-care-platform/prisma/dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -27,6 +27,7 @@ model User {
   notifications Notification[]
   
   role          String    @default("USER")
+  isPro         Boolean   @default(false)
   sitterProfile Sitter?
   reviews       Review[]
   sentMessages      Message[] @relation("SentMessages")
@@ -41,6 +42,8 @@ model Pet {
   age             String?
   diet            String?
   medicalNotes    String?
+  likes           String?
+  dislikes        String?
   image           String?
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -123,6 +126,7 @@ model Review {
   sitter    Sitter   @relation(fields: [sitterId], references: [id], onDelete: Cascade)
   bookingId String   @unique
   booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  photos    String?  // Stores JSON stringified array of photo URLs
   createdAt DateTime @default(now())
 }
 

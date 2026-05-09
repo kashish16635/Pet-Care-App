@@ -31,7 +31,7 @@ export async function GET() {
 
         // Compute balance tracking all transaction history
         const transactions = await prisma.transaction.findMany({ where: { userId } });
-        const initialBalance = 1250; // Let's give all mock users a starting balance 
+        const initialBalance = 13250; // Let's give all mock users a starting balance 
         const balance = transactions.reduce((sum: number, tx: any) => sum + tx.amount, initialBalance);
 
         // Fetch user notifications

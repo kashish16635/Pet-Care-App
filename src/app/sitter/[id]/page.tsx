@@ -48,8 +48,13 @@ export default async function SitterProfile({ params }: { params: Promise<{ id: 
                         <span className="text-5xl font-bold text-primary-main dark:text-white/50 mb-2">
                             {sitter.name.split(' ').map(n => n[0]).join('').toUpperCase() || "S"}
                         </span>
-                        <div className="bg-white dark:bg-gray-800 px-3 py-1 rounded-full text-xs font-bold text-green-600 dark:text-green-500 flex items-center gap-1 shadow-sm">
-                            <ShieldCheck className="w-3 h-3" /> Aadhar Verified
+                        <div className="flex flex-col gap-2 mt-4 w-full">
+                            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 px-3 py-2 rounded-full text-[10px] font-black text-green-700 dark:text-green-400 flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-widest">
+                                <ShieldCheck className="w-4 h-4 shrink-0" /> Govt ID Verified
+                            </div>
+                            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 px-3 py-2 rounded-full text-[10px] font-black text-blue-700 dark:text-blue-400 flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-widest">
+                                <CheckCircle2 className="w-4 h-4 shrink-0" /> Police Verified
+                            </div>
                         </div>
                     </div>
 
@@ -128,7 +133,23 @@ export default async function SitterProfile({ params }: { params: Promise<{ id: 
                                             </div>
                                             <span className="font-bold text-gray-900 dark:text-white ml-2">{review.user?.name || "Anonymous User"}</span>
                                         </div>
-                                        {review.comment && <p className="text-gray-600 dark:text-gray-300 italic">"{review.comment}"</p>}
+                                        {review.comment && <p className="text-gray-600 dark:text-gray-300 italic mb-2">"{review.comment}"</p>}
+                                        {review.photos && (
+                                            <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                                                {(() => {
+                                                    try {
+                                                        const photos = JSON.parse(review.photos);
+                                                        return photos.map((photo: string, idx: number) => (
+                                                            <div key={idx} className="w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm">
+                                                                <img src={photo} alt="Review photo" className="w-full h-full object-cover hover:scale-110 transition-transform duration-300 cursor-pointer" onClick={() => window.open(photo, '_blank')} />
+                                                            </div>
+                                                        ));
+                                                    } catch (e) {
+                                                        return null;
+                                                    }
+                                                })()}
+                                            </div>
+                                        )}
                                     </div>
                                 )) : (
                                     <p className="text-gray-500 italic">No reviews yet.</p>

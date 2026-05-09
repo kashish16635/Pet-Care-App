@@ -1,13 +1,14 @@
 const { PrismaClient } = require('@prisma/client')
 
-const prisma = new PrismaClient()
+const seedPrisma = new PrismaClient()
 
 async function main() {
-  console.log('Seeding initial sitters...')
+  console.log('Seeding comprehensive India-wide sitters...')
 
   const sitters = [
+    // MUMBAI & THANE
     {
-      id: "cl_seed_sitter_1",
+      id: "sit_mum_1",
       name: "Sneha Sharma",
       type: "Certified Pet Sitter & Walker",
       location: "Bandra West, Mumbai",
@@ -15,25 +16,53 @@ async function main() {
       rating: 4.9,
       reviews: 124,
       price: 800,
-      about: "Hi! I'm Sneha, a lifelong animal lover and certified pet sitter with over 5 years of experience. I specialize in caring for dogs and cats of all ages, including seniors who need medication. I believe every pet deserves personalized attention, interactive playtime, and lots of cuddles while their parents are away.",
+      about: "Lifelong animal lover and certified pet sitter with 5+ years experience.",
       verified: true,
       image: "SS"
     },
     {
-      id: "cl_seed_sitter_2",
-      name: "Happy Paws Boarding",
-      type: "Boarding Center",
-      location: "Koramangala, Bangalore",
-      distance: "5.0 km away",
-      rating: 4.8,
-      reviews: 89,
-      price: 1500,
-      about: "A spacious, stress-free boarding center with dedicated play areas. We offer 24/7 video monitoring so you can see your pets anytime. All our staff are certified in pet first-aid.",
+      id: "sit_thane_1",
+      name: "Arjun Mehta",
+      type: "Boarding Center & Daycare",
+      location: "Thane West, Maharashtra",
+      distance: "1.5 km away",
+      rating: 4.7,
+      reviews: 45,
+      price: 1200,
+      about: "Spacious home boarding in Thane with a dedicated pet terrace.",
       verified: true,
-      image: "HP"
+      image: "AM"
+    },
+    // RAJASTHAN
+    {
+      id: "sit_jaipur_1",
+      name: "Amit Kasliwal",
+      type: "Dog Walker & Trainer",
+      location: "C-Scheme, Jaipur, Rajasthan",
+      distance: "1.2 km away",
+      rating: 4.9,
+      reviews: 45,
+      price: 600,
+      about: "Professional dog walker in Jaipur with expertise in handling large breeds.",
+      verified: true,
+      image: "AK"
     },
     {
-      id: "cl_seed_sitter_3",
+      id: "sit_udaipur_1",
+      name: "Priya Mewada",
+      type: "Cat Sitter",
+      location: "Fateh Sagar, Udaipur, Rajasthan",
+      distance: "3.0 km away",
+      rating: 5.0,
+      reviews: 32,
+      price: 900,
+      about: "I offer a loving home environment for your cats in Udaipur.",
+      verified: true,
+      image: "PM"
+    },
+    // DELHI & NORTH
+    {
+      id: "sit_del_1",
       name: "Rahul Verma",
       type: "Dog Walker & Sitter",
       location: "South Ex, Delhi",
@@ -41,42 +70,124 @@ async function main() {
       rating: 5.0,
       reviews: 210,
       price: 500,
-      about: "I am Rahul, providing energetic dog walks and drop-in visits. Perfect for high-energy breeds that need to burn off steam in the middle of the day. Fully insured.",
+      about: "Providing energetic dog walks and drop-in visits in South Delhi.",
       verified: true,
       image: "RV"
     },
     {
-      id: "cl_seed_sitter_4",
-      name: "Cozy Cats Inn",
+      id: "sit_chd_1",
+      name: "Simran Kaur",
+      type: "Pet Groomer & Sitter",
+      location: "Sector 17, Chandigarh",
+      distance: "2.0 km away",
+      rating: 4.8,
+      reviews: 54,
+      price: 1100,
+      about: "Chandigarh's favorite pet sitter. I love all furry friends!",
+      verified: true,
+      image: "SK"
+    },
+    // SOUTH INDIA
+    {
+      id: "sit_blr_1",
+      name: "Happy Paws Boarding",
       type: "Boarding Center",
-      location: "Andheri West, Mumbai",
-      distance: "8.4 km away",
+      location: "Koramangala, Bangalore",
+      distance: "5.0 km away",
+      rating: 4.8,
+      reviews: 89,
+      price: 1500,
+      about: "A spacious, stress-free boarding center with dedicated play areas.",
+      verified: true,
+      image: "HP"
+    },
+    {
+      id: "sit_hyd_1",
+      name: "Kiran Reddy",
+      type: "Dog Walker",
+      location: "Jubilee Hills, Hyderabad",
+      distance: "4.1 km away",
+      rating: 4.9,
+      reviews: 78,
+      price: 750,
+      about: "Active dog walker in Hyderabad. I ensure your pet stays fit and happy.",
+      verified: true,
+      image: "KR"
+    },
+    // INDORE & MP
+    {
+      id: "sit_indore_1",
+      name: "Vikram Singh",
+      type: "Pet Care Specialist",
+      location: "Vijay Nagar, Indore, MP",
+      distance: "2.1 km away",
+      rating: 4.8,
+      reviews: 67,
+      price: 700,
+      about: "Experienced pet caregiver in Indore providing sitting and walking.",
+      verified: true,
+      image: "VS"
+    },
+    // AHMEDABAD
+    {
+      id: "sit_ahm_1",
+      name: "Dharmesh Patel",
+      type: "Professional Sitter",
+      location: "Satellite, Ahmedabad, Gujarat",
+      distance: "3.5 km away",
       rating: 4.7,
-      reviews: 56,
-      price: 1200,
-      about: "A cat-exclusive boarding facility designed to keep your feline friends calm and relaxed. No barking dogs, just peaceful kitty condos with multi-level climbing structures and cozy beds.",
-      verified: false,
-      image: "CC"
+      reviews: 42,
+      price: 650,
+      about: "Reliable pet care in Ahmedabad. Available for long-term sitting.",
+      verified: true,
+      image: "DP"
+    },
+    // UTTAR PRADESH
+    {
+      id: "sit_kanpur_1",
+      name: "Rishi Srivastava",
+      type: "Dog Walker & Sitter",
+      location: "Swaroop Nagar, Kanpur, Uttar Pradesh",
+      distance: "1.8 km away",
+      rating: 4.9,
+      reviews: 38,
+      price: 550,
+      about: "Pet lover in Kanpur. I provide daily walks and home visits.",
+      verified: true,
+      image: "RS"
+    },
+    {
+      id: "sit_lucknow_1",
+      name: "Manasvi Gupta",
+      type: "Certified Sitter",
+      location: "Gomti Nagar, Lucknow, Uttar Pradesh",
+      distance: "2.4 km away",
+      rating: 4.8,
+      reviews: 47,
+      price: 700,
+      about: "Professional pet sitting in the heart of Lucknow.",
+      verified: true,
+      image: "MG"
     }
   ]
 
   for (const sitter of sitters) {
-    await prisma.sitter.upsert({
+    await seedPrisma.sitter.upsert({
       where: { id: sitter.id },
       update: {},
       create: sitter,
     })
   }
 
-  console.log('Seeding finished.')
+  console.log('India-wide seeding finished.')
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await seedPrisma.$disconnect()
   })
   .catch(async (e) => {
     console.error(e)
-    await prisma.$disconnect()
+    await seedPrisma.$disconnect()
     process.exit(1)
   })

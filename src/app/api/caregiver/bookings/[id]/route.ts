@@ -41,6 +41,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             data: { status }
         });
 
+        // If confirmed, deduct money from pet owner
+        if (status === "Confirmed") {
+            await prisma.transaction.create({
+                data: {
+                    title: `Payment for ${updatedBooking.service}`,
+                    amount: -(updatedBooking.totalPrice + 40), // Deduct the money now
+                    type: "Debit",
+                    status: "Success",
+                    userId: booking.userId
+                }
+            });
+        }
+
         // Add a Notification for the Pet Owner
         await prisma.notification.create({
             data: {

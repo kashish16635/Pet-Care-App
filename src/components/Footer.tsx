@@ -35,56 +35,60 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div>
-                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4">Services</h3>
+                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4 uppercase text-xs tracking-widest">Services</h3>
                         <ul className="space-y-3">
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Pet Sitting</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Boarding Centers</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Grooming & Training</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Vet Consultation</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Pet Pickup & Drop</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Pet Sitting</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Boarding Centers</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Grooming & Training</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Vet Consultation</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Pet Pickup & Drop</Link></li>
                         </ul>
                     </div>
 
                     {/* Company */}
                     <div>
-                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4">Company</h3>
+                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4 uppercase text-xs tracking-widest">Company</h3>
                         <ul className="space-y-3">
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">About Us</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">How it Works</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Trust & Safety</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Careers</Link></li>
-                            <li><Link href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors">Contact</Link></li>
+                            <li><Link href="/" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">About Us</Link></li>
+                            <li><Link href="/#how-it-works" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">How it Works</Link></li>
+                            <li><Link href="/#trust" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Trust & Safety</Link></li>
+                            <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Careers</Link></li>
+                            <li><Link href="mailto:hello@pawsandcare.com" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Contact</Link></li>
                         </ul>
                     </div>
 
                     {/* Contact */}
                     <div>
-                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4">Contact Us</h3>
+                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-4 uppercase text-xs tracking-widest">Contact Us</h3>
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-sm text-gray-500 dark:text-gray-400">
-                                <MapPin className="w-5 h-5 text-secondary-main shrink-0" />
-                                <span>123 Pet Avenue, Suite 100<br />New York, NY 10001</span>
+                                <MapPin className="w-5 h-5 text-primary-main shrink-0" />
+                                <span className="font-medium">123 Pet Avenue, Suite 100<br />New York, NY 10001</span>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                                <Phone className="w-5 h-5 text-secondary-main shrink-0" />
-                                <span>+1 (800) 123-PAWS</span>
+                            <li>
+                                <a href="tel:+18001237297" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
+                                    <Phone className="w-5 h-5 text-primary-main shrink-0" />
+                                    <span>+1 (800) 123-PAWS</span>
+                                </a>
                             </li>
-                            <li className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                                <Mail className="w-5 h-5 text-secondary-main shrink-0" />
-                                <span>hello@pawsandcare.com</span>
+                            <li>
+                                <a href="mailto:hello@pawsandcare.com" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
+                                    <Mail className="w-5 h-5 text-primary-main shrink-0" />
+                                    <span>hello@pawsandcare.com</span>
+                                </a>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <div className="pt-8 mt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-[12px] font-medium">
                         © {new Date().getFullYear()} Paws & Care Platforms. All rights reserved.
                     </p>
-                    <div className="flex gap-6 text-sm">
-                        <Link href="#" className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="#" className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <Link href="#" className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Cookie Policy</Link>
+                    <div className="flex gap-6 text-[12px] font-medium">
+                        <Link href="/" className="text-gray-400 hover:text-primary-main transition-colors">Privacy Policy</Link>
+                        <Link href="/" className="text-gray-400 hover:text-primary-main transition-colors">Terms of Service</Link>
+                        <Link href="/" className="text-gray-400 hover:text-primary-main transition-colors">Cookie Policy</Link>
                     </div>
                 </div>
             </div>

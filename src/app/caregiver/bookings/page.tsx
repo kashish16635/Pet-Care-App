@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CaregiverNavbar } from "@/components/CaregiverNavbar";
 import { Footer } from "@/components/Footer";
-import { Calendar, CheckCircle, XCircle, Clock, Video } from "lucide-react";
+import { Calendar, CheckCircle, XCircle, Clock, Video, Phone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function CaregiverBookings() {
@@ -15,43 +15,52 @@ export default function CaregiverBookings() {
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // useEffect ka use tab hota hai jab page load hota hai
     useEffect(() => {
+        // Agar user login nahi hai (unauthenticated), toh use login page par bhej do
         if (status === "unauthenticated") {
             router.push("/caregiver/login");
-        } else if (status === "authenticated" && session?.user?.role === "CAREGIVER") {
+        } 
+        // Agar user login hai aur uska role 'CAREGIVER' hai, toh uski bookings fetch karo
+        else if (status === "authenticated" && session?.user?.role === "CAREGIVER") {
             fetchBookings();
         }
     }, [status, session]);
 
+    // Ye function database se saari bookings mangwane ke liye hai
     const fetchBookings = async () => {
         try {
+            // API call kar rahe hain caregiver ki details aur bookings lene ke liye
             const res = await fetch("/api/caregiver/profile");
             if (res.ok) {
                 const data = await res.json();
+                // Data milne par hum 'bookings' state mein use save kar lete hain
                 setBookings(data.bookings || []);
             }
         } catch (error) {
             console.error(error);
         } finally {
+            // Data load hone ke baad 'loading' ko false kar dete hain taaki spinner ruk jaye
             setLoading(false);
         }
     };
 
-    const updateBookingStatus = async (id: string, newStatus: string) => {
+    // Ye function booking status (Accept/Reject/Complete) update karne ke liye hai
+    const updateBookingStatus = async (bookingId: string, newStatus: string) => {
         try {
-            const res = await fetch(`/api/caregiver/bookings/${id}`, {
-                method: "PUT",
+            const res = await fetch("/api/bookings", {
+                method: "PATCH", // PATCH matlab data ka ek hissa update karna
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ bookingId, status: newStatus }),
             });
 
             if (res.ok) {
-                // Update local state
-                setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+                // Agar update success ho gaya, toh list ko refresh kar do
+                fetchBookings();
             }
         } catch (error) {
             console.error("Failed to update status", error);
-        }
+        }  
     };
 
     if (loading || status === "loading") {
@@ -127,7 +136,20 @@ export default function CaregiverBookings() {
                                             <div>
                                                 <h3 className="font-bold text-lg text-gray-900 dark:text-white">{booking.service}</h3>
                                                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Date: {booking.date} at {booking.time}</p>
+                                                {booking.instructions && <p className="text-gray-600 dark:text-gray-300 text-sm mt-2 italic whitespace-pre-wrap border-l-2 border-primary-main/30 pl-3">"{booking.instructions}"</p>}
                                                 <p className="font-bold text-primary-main mt-2">₹{booking.totalPrice}</p>
+
+                                                {/* Emergency Action Buttons */}
+                                                {booking.instructions && booking.instructions.includes("Emergency Contact") && (
+                                                    <div className="flex gap-3 mt-4">
+                                                        <a
+                                                            href={`tel:${booking.instructions.match(/Emergency Contact:\s*([^\n]+)/)?.[1]?.replace(/\D/g, '') || ""}`}
+                                                            className="flex items-center gap-1.5 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                                                        >
+                                                            <Phone className="w-4 h-4 shrink-0" /> SOS Call
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="shrink-0 flex flex-col gap-2">

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { name, type, breed, age, diet, medicalNotes, image } = body;
+        const { name, type, breed, age, diet, medicalNotes, likes, dislikes, image } = body;
 
         if (!name || !type) {
             return NextResponse.json({ message: "Name and Type are required" }, { status: 400 });
@@ -25,6 +25,8 @@ export async function POST(req: Request) {
                 age,
                 diet,
                 medicalNotes,
+                likes,
+                dislikes,
                 image,
                 userId: session.user.id
             }
@@ -45,7 +47,7 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, name, type, breed, age, diet, medicalNotes, image } = body;
+        const { id, name, type, breed, age, diet, medicalNotes, likes, dislikes, image } = body;
 
         if (!id) {
             return NextResponse.json({ message: "Pet ID is required" }, { status: 400 });
@@ -60,6 +62,8 @@ export async function PUT(req: Request) {
                 ...(age !== undefined && { age }),
                 ...(diet !== undefined && { diet }),
                 ...(medicalNotes !== undefined && { medicalNotes }),
+                ...(likes !== undefined && { likes }),
+                ...(dislikes !== undefined && { dislikes }),
                 ...(image !== undefined && { image })
             }
         });

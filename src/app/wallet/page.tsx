@@ -5,10 +5,10 @@ import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { CreditCard, ArrowUpRight, ArrowDownLeft, Clock, Loader2 } from "lucide-react";
+import { CreditCard, ArrowUpRight, ArrowDownLeft, Clock, Loader2, Trash2 } from "lucide-react";
 
 export default function WalletPage() {
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const [showAddModal, setShowAddModal] = useState(false);
     const [amountToAdd, setAmountToAdd] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,6 +16,11 @@ export default function WalletPage() {
     const [loading, setLoading] = useState(true);
 
     const [paymentMethod, setPaymentMethod] = useState("upi"); // 'upi' or 'card'
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [showPayModal, setShowPayModal] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState("");
+    const [payAmount, setPayAmount] = useState("");
+    const [payeeName, setPayeeName] = useState("");
 
     const fetchData = () => {
         setLoading(true);
@@ -33,24 +38,43 @@ export default function WalletPage() {
         }
     }, [status]);
 
-    const handleAddFunds = async () => {
-        if (!amountToAdd || isNaN(parseFloat(amountToAdd))) return;
+    const handleTransaction = async (type: 'Deposit' | 'Withdrawal' | 'Payment', amount: string, title?: string) => {
+        if (!amount || isNaN(parseFloat(amount))) return;
         setIsSubmitting(true);
         try {
             const res = await fetch("/api/wallet", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: amountToAdd })
+                body: JSON.stringify({ amount, type, title })
             });
             if (res.ok) {
                 setShowAddModal(false);
+                setShowWithdrawModal(false);
+                setShowPayModal(false);
                 setAmountToAdd("");
+                setWithdrawAmount("");
+                setPayAmount("");
+                setPayeeName("");
                 fetchData();
             }
         } catch (error) {
             console.error(error);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteTransaction = async (id: string) => {
+        if (!confirm("Are you sure you want to remove this transaction from your history?")) return;
+        try {
+            const res = await fetch(`/api/wallet?id=${id}`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                fetchData();
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -93,15 +117,21 @@ export default function WalletPage() {
 
                     {/* Quick Actions */}
                     <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group">
-                            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div 
+                            onClick={() => setShowWithdrawModal(true)}
+                            className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/5 transition-all group"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-12 transition-transform">
                                 <ArrowDownLeft className="text-green-600 dark:text-green-400 w-6 h-6" />
                             </div>
                             <h3 className="font-bold text-gray-900 dark:text-white">Withdraw</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">To Bank Account</p>
                         </div>
-                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-main transition-colors group">
-                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div 
+                            onClick={() => setShowPayModal(true)}
+                            className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all group"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:-rotate-12 transition-transform">
                                 <ArrowUpRight className="text-blue-600 dark:text-blue-400 w-6 h-6" />
                             </div>
                             <h3 className="font-bold text-gray-900 dark:text-white">Pay Sitter</h3>
@@ -109,6 +139,8 @@ export default function WalletPage() {
                         </div>
                     </div>
                 </div>
+
+
 
                 {/* Transactions */}
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mt-12 mb-6">Recent Transactions</h2>
@@ -126,11 +158,19 @@ export default function WalletPage() {
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className={`font-bold ${tx.amount > 0 ? "text-green-600 dark:text-green-400" : "text-gray-900 dark:text-white"}`}>
-                                        {tx.amount > 0 ? "+" : ""}₹{tx.amount}
-                                    </p>
-                                    <p className="text-xs text-green-500 font-medium">{tx.status}</p>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                        <p className={`font-bold ${tx.amount > 0 ? "text-green-600 dark:text-green-400" : "text-gray-900 dark:text-white"}`}>
+                                            {tx.amount > 0 ? "+" : ""}₹{tx.amount}
+                                        </p>
+                                        <p className="text-xs text-green-500 font-medium">{tx.status}</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleDeleteTransaction(tx.id)}
+                                        className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -224,12 +264,127 @@ export default function WalletPage() {
                             <div className="flex gap-4 mt-8">
                                 <Button 
                                     className="flex-1 py-6 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary-main/20"
-                                    onClick={handleAddFunds}
+                                    onClick={() => handleTransaction('Deposit', amountToAdd)}
                                     disabled={isSubmitting || !amountToAdd}
                                 >
                                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Pay ₹${amountToAdd || '0'}`}
                                 </Button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Withdraw Modal */}
+                {showWithdrawModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
+                                        <ArrowDownLeft className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Withdraw</h3>
+                                </div>
+                                <button onClick={() => setShowWithdrawModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount to Withdraw</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">₹</span>
+                                        <input 
+                                            type="number" 
+                                            value={withdrawAmount}
+                                            onChange={(e) => setWithdrawAmount(e.target.value)}
+                                            placeholder="0.00"
+                                            className="w-full h-14 pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-xl font-black focus:border-green-500 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Bank Details</label>
+                                    <div className="space-y-3">
+                                        <input type="text" placeholder="Account Holder Name" className="w-full h-12 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-green-500 focus:outline-none" />
+                                        <input type="text" placeholder="Account Number" className="w-full h-12 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-green-500 focus:outline-none" />
+                                        <input type="text" placeholder="IFSC Code" className="w-full h-12 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-green-500 focus:outline-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-8">
+                                <Button 
+                                    className="flex-1 py-6 bg-green-600 hover:bg-green-700 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-green-500/20"
+                                    onClick={() => handleTransaction('Withdrawal', withdrawAmount)}
+                                    disabled={isSubmitting || !withdrawAmount || parseFloat(withdrawAmount) > balance}
+                                >
+                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Withdraw ₹${withdrawAmount || '0'}`}
+                                </Button>
+                            </div>
+                            {parseFloat(withdrawAmount) > balance && (
+                                <p className="text-[10px] text-red-500 font-bold mt-3 text-center uppercase tracking-widest">Insufficient balance</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Pay Sitter Modal */}
+                {showPayModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                        <ArrowUpRight className="w-6 h-6" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Pay Sitter</h3>
+                                </div>
+                                <button onClick={() => setShowPayModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Amount to Transfer</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">₹</span>
+                                        <input 
+                                            type="number" 
+                                            value={payAmount}
+                                            onChange={(e) => setPayAmount(e.target.value)}
+                                            placeholder="0.00"
+                                            className="w-full h-14 pl-10 pr-4 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-xl font-black focus:border-blue-500 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Sitter Details</label>
+                                    <div className="space-y-3">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Sitter Name or ID" 
+                                            value={payeeName}
+                                            onChange={(e) => setPayeeName(e.target.value)}
+                                            className="w-full h-12 px-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-blue-500 focus:outline-none" 
+                                        />
+                                        <textarea placeholder="Message for sitter (optional)" className="w-full p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:border-blue-500 focus:outline-none resize-none h-20" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-8">
+                                <Button 
+                                    className="flex-1 py-6 bg-blue-600 hover:bg-blue-700 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-500/20"
+                                    onClick={() => handleTransaction('Payment', payAmount, payeeName ? `Payment to ${payeeName}` : undefined)}
+                                    disabled={isSubmitting || !payAmount || parseFloat(payAmount) > balance}
+                                >
+                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : `Send ₹${payAmount || '0'}`}
+                                </Button>
+                            </div>
+                            {parseFloat(payAmount) > balance && (
+                                <p className="text-[10px] text-red-500 font-bold mt-3 text-center uppercase tracking-widest">Insufficient balance</p>
+                            )}
                         </div>
                     </div>
                 )}

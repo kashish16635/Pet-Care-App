@@ -5,9 +5,10 @@ import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { Settings, Bell, Moon, ChevronRight, Shield, BellRing, Palette, HardDrive } from "lucide-react";
+import { Settings, Bell, Moon, ChevronRight, Shield, BellRing, Palette, HardDrive, Eye, EyeOff, CheckCircle2, AlertTriangle, PhoneCall, Zap, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
+import { signOut } from "next-auth/react";
 
 export default function SettingsPage() {
     const { data: session, status } = useSession();
@@ -29,6 +30,20 @@ export default function SettingsPage() {
         current: "",
         new: ""
     });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+
+    // 2FA states
+    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+    const [show2FAModal, setShow2FAModal] = useState(false);
+    const [twoFAStep, setTwoFAStep] = useState(1);
+    const [phone, setPhone] = useState("");
+    const [otp, setOtp] = useState("");
+    const [is2FALoading, setIs2FALoading] = useState(false);
+
+    // Deactivation states
+    const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+    const [deactivateLoading, setDeactivateLoading] = useState(false);
 
     // Notification states
     const [notificationPrefs, setNotificationPrefs] = useState([
@@ -100,6 +115,43 @@ export default function SettingsPage() {
         }
     };
 
+    const handleEnable2FA = async () => {
+        setIs2FALoading(true);
+        // Simulate sending OTP
+        setTimeout(() => {
+            setIs2FALoading(false);
+            setTwoFAStep(2);
+        }, 1500);
+    };
+
+    const handleVerify2FA = async () => {
+        setIs2FALoading(true);
+        // Simulate verification
+        setTimeout(() => {
+            setIs2FALoading(false);
+            setIs2FAEnabled(true);
+            setTwoFAStep(3);
+        }, 1500);
+    };
+
+    const handleDeactivateAccount = async () => {
+        setDeactivateLoading(true);
+        try {
+            const res = await fetch("/api/user/deactivate", { method: "DELETE" });
+            if (res.ok) {
+                alert("Account deactivated. We're sad to see you go.");
+                signOut({ callbackUrl: "/" });
+            } else {
+                alert("Failed to deactivate account.");
+            }
+        } catch (error) {
+            alert("An error occurred.");
+        } finally {
+            setDeactivateLoading(false);
+        }
+    };
+
+
     const toggleNotification = (id: string) => {
         setNotificationPrefs(prev => prev.map(p => 
             p.id === id ? { ...p, active: !p.active } : p
@@ -170,15 +222,7 @@ export default function SettingsPage() {
                             </nav>
                         </motion.div>
 
-                        <div className="bg-gradient-to-br from-primary-main to-secondary-main rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary-main/20 relative overflow-hidden group">
-                            <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                                <Shield className="w-32 h-32" />
-                            </div>
-                            <h4 className="text-xl font-black uppercase tracking-tight mb-2 relative z-10">Pro Account</h4>
-                            <p className="text-xs font-bold text-white/80 uppercase tracking-widest mb-6 relative z-10">Unlock premium pet services</p>
-                            <Button className="w-full bg-white text-primary-main font-black rounded-2xl py-4 shadow-xl hover:bg-gray-50 relative z-10">Upgrade Now</Button>
                         </div>
-                    </div>
 
                     {/* Settings Content */}
                     <div className="lg:col-span-8">
@@ -244,8 +288,30 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="pt-8 flex justify-end">
-                                            <Button onClick={handleSaveProfile} className="px-10 py-6 rounded-2xl font-black uppercase tracking-widest text-xs">Save Changes</Button>
+                                        <div className="pt-8 flex justify-end border-b border-gray-100 dark:border-gray-800 pb-8">
+                                            <Button onClick={handleSaveProfile} className="px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">Save Profile</Button>
+                                        </div>
+
+                                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`p-2.5 rounded-xl transition-colors ${is2FAEnabled ? 'bg-emerald-500/10' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                                    <Shield className={`w-5 h-5 ${is2FAEnabled ? 'text-emerald-500' : 'text-gray-400'}`} />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="text-[12px] font-black text-gray-900 dark:text-white uppercase tracking-tight">Two-Factor Security</h4>
+                                                        {is2FAEnabled && <span className="bg-emerald-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest">Active</span>}
+                                                    </div>
+                                                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Protect your account with OTP</p>
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                variant={is2FAEnabled ? "outline" : "default"}
+                                                onClick={() => is2FAEnabled ? setIs2FAEnabled(false) : setShow2FAModal(true)}
+                                                className="px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-[9px]"
+                                            >
+                                                {is2FAEnabled ? "Disable 2FA" : "Enable 2FA"}
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
@@ -352,30 +418,64 @@ export default function SettingsPage() {
                                             <div className="p-8 rounded-[2rem] bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
                                                 <h4 className="text-[13px] font-black uppercase tracking-tight mb-4">Change Password</h4>
                                                 <div className="space-y-4">
-                                                    <input 
-                                                        type="password" 
-                                                        placeholder="Current Password" 
-                                                        value={passwordData.current}
-                                                        onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
-                                                        className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 border-none outline-none text-[13px] font-bold" 
-                                                    />
-                                                    <input 
-                                                        type="password" 
-                                                        placeholder="New Password" 
-                                                        value={passwordData.new}
-                                                        onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
-                                                        className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 border-none outline-none text-[13px] font-bold" 
-                                                    />
+                                                    <div className="relative">
+                                                        <input 
+                                                            type={showCurrentPassword ? "text" : "password"} 
+                                                            placeholder="Current Password" 
+                                                            value={passwordData.current}
+                                                            onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
+                                                            className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 border-none outline-none text-[13px] font-bold pr-12" 
+                                                        />
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        >
+                                                            {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
+                                                    <div className="relative">
+                                                        <input 
+                                                            type={showNewPassword ? "text" : "password"} 
+                                                            placeholder="New Password" 
+                                                            value={passwordData.new}
+                                                            onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+                                                            className="w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 border-none outline-none text-[13px] font-bold pr-12" 
+                                                        />
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                                        >
+                                                            {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
                                                     <Button onClick={handleUpdatePassword} className="w-full py-6 rounded-2xl font-black uppercase tracking-widest text-[10px]">Update Password</Button>
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center justify-between p-8 bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] border border-gray-100 dark:border-gray-700">
                                                 <div>
-                                                    <p className="text-[13px] font-black text-gray-900 dark:text-white uppercase tracking-tight">Two-Factor Authentication</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-[13px] font-black text-gray-900 dark:text-white uppercase tracking-tight">Two-Factor Authentication</p>
+                                                        {is2FAEnabled && <span className="bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Active</span>}
+                                                    </div>
                                                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Add an extra layer of security</p>
                                                 </div>
-                                                <Button variant="outline" className="px-6 rounded-xl font-black uppercase tracking-widest text-[10px]">Enable</Button>
+                                                <Button 
+                                                    variant={is2FAEnabled ? "outline" : "default"} 
+                                                    onClick={() => {
+                                                        if (is2FAEnabled) {
+                                                            setIs2FAEnabled(false);
+                                                            setTwoFAStep(1);
+                                                        } else {
+                                                            setShow2FAModal(true);
+                                                        }
+                                                    }}
+                                                    className="px-6 rounded-xl font-black uppercase tracking-widest text-[10px]"
+                                                >
+                                                    {is2FAEnabled ? "Disable" : "Enable"}
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -386,7 +486,13 @@ export default function SettingsPage() {
                                         <h4 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Danger Zone</h4>
                                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Irreversible account actions</p>
                                     </div>
-                                    <Button variant="ghost" className="text-red-500 font-black uppercase tracking-widest text-xs px-8 py-6 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/20 border-2 border-transparent hover:border-red-100 dark:hover:border-red-900/30">Deactivate Account</Button>
+                                    <Button 
+                                        onClick={() => setShowDeactivateModal(true)}
+                                        variant="ghost" 
+                                        className="text-red-500 font-black uppercase tracking-widest text-xs px-8 py-6 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950/20 border-2 border-transparent hover:border-red-100 dark:hover:border-red-900/30"
+                                    >
+                                        Deactivate Account
+                                    </Button>
                                 </div>
                             </motion.div>
                         </AnimatePresence>
@@ -394,7 +500,123 @@ export default function SettingsPage() {
                 </div>
             </main>
 
+            {/* 2FA Modal */}
+            <AnimatePresence>
+                {show2FAModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
+                        >
+                            <div className="p-10 text-center">
+                                {twoFAStep === 1 && (
+                                    <>
+                                        <div className="w-20 h-20 bg-primary-main/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <PhoneCall className="w-10 h-10 text-primary-main" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">Setup 2FA</h3>
+                                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-8">Enter your phone number to receive a secure code</p>
+                                        
+                                        <div className="relative mb-8">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">+91</span>
+                                            <input 
+                                                type="tel" 
+                                                placeholder="XXXXXXXXXX"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                className="w-full pl-14 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none outline-none font-bold text-lg tracking-widest"
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex gap-4">
+                                            <Button variant="ghost" className="flex-1 rounded-2xl" onClick={() => setShow2FAModal(false)}>Cancel</Button>
+                                            <Button className="flex-1 rounded-2xl" onClick={handleEnable2FA} disabled={is2FALoading}>
+                                                {is2FALoading ? "Sending..." : "Send OTP"}
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {twoFAStep === 2 && (
+                                    <>
+                                        <div className="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <Shield className="w-10 h-10 text-blue-600" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">Verify OTP</h3>
+                                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-8">Code sent to +91 {phone}</p>
+                                        
+                                        <input 
+                                            type="text" 
+                                            placeholder="0 0 0 0"
+                                            maxLength={4}
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            className="w-full px-4 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none outline-none font-black text-3xl tracking-[1em] text-center mb-8"
+                                        />
+                                        
+                                        <div className="flex gap-4">
+                                            <Button variant="ghost" className="flex-1 rounded-2xl" onClick={() => setTwoFAStep(1)}>Back</Button>
+                                            <Button className="flex-1 rounded-2xl" onClick={handleVerify2FA} disabled={is2FALoading}>
+                                                {is2FALoading ? "Verifying..." : "Verify"}
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+
+                                {twoFAStep === 3 && (
+                                    <>
+                                        <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-emerald-500/20">
+                                            <CheckCircle2 className="w-12 h-12 text-white" />
+                                        </div>
+                                        <h3 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter mb-2 leading-none">Security Active!</h3>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-10">Two-factor authentication is now enabled</p>
+                                        
+                                        <Button className="w-full py-6 rounded-2xl font-black uppercase tracking-widest text-xs" onClick={() => setShow2FAModal(false)}>Great, Thanks!</Button>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Deactivate Confirmation Modal */}
+            <AnimatePresence>
+                {showDeactivateModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white dark:bg-gray-900 rounded-[3rem] w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
+                        >
+                            <div className="p-10 text-center">
+                                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <AlertTriangle className="w-10 h-10 text-red-500" />
+                                </div>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">Are you sure?</h3>
+                                <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-10">Deactivating your account will remove your pets, wallet history, and active bookings. This cannot be undone.</p>
+                                
+                                <div className="flex gap-4">
+                                    <Button variant="ghost" className="flex-1 rounded-2xl" onClick={() => setShowDeactivateModal(false)}>Cancel</Button>
+                                    <Button 
+                                        onClick={handleDeactivateAccount}
+                                        disabled={deactivateLoading}
+                                        className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-2xl border-none shadow-xl shadow-red-500/20"
+                                    >
+                                        {deactivateLoading ? "Processing..." : "Yes, Deactivate"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <Footer />
         </div>
     );
 }
+

@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/Button";
-import { Menu, X, PawPrint, Moon, Settings, ChevronDown, User, LifeBuoy, LogOut, Sun, Bell } from "lucide-react";
+import { Menu, X, PawPrint, Moon, Settings, ChevronDown, User, LifeBuoy, LogOut, Sun, Bell, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 
@@ -49,6 +49,20 @@ export function Navbar() {
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const deleteNotification = async (id?: string) => {
+        try {
+            const url = id ? `/api/notifications?id=${id}` : "/api/notifications";
+            await fetch(url, { method: "DELETE" });
+            if (id) {
+                setNotifications(prev => prev.filter(n => n.id !== id));
+            } else {
+                setNotifications(prev => prev.filter(n => !n.read));
+            }
+        } catch (error) {
+            console.error("DEBUG: Delete Error:", error);
         }
     };
 
@@ -156,25 +170,42 @@ export function Navbar() {
                                                 >
                                                     <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center">
                                                         <h3 className="text-[13px] font-bold text-gray-900 dark:text-white uppercase tracking-tight">Notifications</h3>
-                                                        <span 
-                                                            onClick={markAsRead}
-                                                            className="text-[10px] font-bold text-primary-main uppercase tracking-widest cursor-pointer hover:underline"
-                                                        >
-                                                            Mark all read
-                                                        </span>
+                                                        <div className="flex gap-3 items-center">
+                                                            <span 
+                                                                onClick={markAsRead}
+                                                                className="text-[10px] font-bold text-primary-main uppercase tracking-widest cursor-pointer hover:underline"
+                                                            >
+                                                                Mark read
+                                                            </span>
+                                                            <span 
+                                                                onClick={() => deleteNotification()}
+                                                                className="text-[10px] font-bold text-red-500 uppercase tracking-widest cursor-pointer hover:underline"
+                                                            >
+                                                                Clear Read
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     <div className="max-h-80 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800">
                                                         {notifications.length > 0 ? (
                                                             notifications.map((n) => (
-                                                                <div key={n.id} className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-3 ${!n.read ? 'bg-primary-light/5' : ''}`}>
+                                                                 <div key={n.id} className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-3 relative group/notif ${!n.read ? 'bg-primary-light/5' : ''}`}>
                                                                     <div className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center ${n.type === 'Success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                                                                         {n.type === 'Success' ? <PawPrint className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                                                                     </div>
-                                                                    <div>
+                                                                    <div className="flex-1">
                                                                         <p className="text-[12px] font-bold text-gray-900 dark:text-white leading-tight mb-0.5">{n.title}</p>
                                                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{n.message}</p>
                                                                         <p className="text-[9px] text-gray-400 mt-1 font-medium">{new Date(n.createdAt).toLocaleDateString()}</p>
                                                                     </div>
+                                                                    <button 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            deleteNotification(n.id);
+                                                                        }}
+                                                                        className="opacity-0 group-hover/notif:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </button>
                                                                 </div>
                                                             ))
                                                         ) : (
@@ -402,9 +433,9 @@ export function Navbar() {
                                 {notifications && notifications.length > 0 ? (
                                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {notifications.map((n: any, index: number) => (
-                                            <div 
+                                             <div 
                                                 key={n?.id || `unotif-${index}`} 
-                                                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all flex gap-4 ${!n?.read ? 'bg-primary-light/5 border-l-4 border-primary-main' : ''}`}
+                                                className={`p-6 hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all flex gap-4 relative group/drawer ${!n?.read ? 'bg-primary-light/5 border-l-4 border-primary-main' : ''}`}
                                             >
                                                 <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center shadow-sm ${n?.type === 'Success' || n?.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                                                     {n?.type === 'Success' || n?.type === 'success' ? <PawPrint className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
@@ -415,17 +446,29 @@ export function Navbar() {
                                                         <span className="text-[9px] font-bold text-gray-400">{n?.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Just now"}</span>
                                                     </div>
                                                     <p className="text-[12px] text-gray-600 dark:text-gray-400 leading-relaxed">{n?.message || "No details available"}</p>
-                                                    {!n.read && (
+                                                    <div className="flex gap-4 mt-3">
+                                                        {!n.read && (
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    markAsRead();
+                                                                }}
+                                                                className="text-[9px] font-black text-primary-main uppercase tracking-widest hover:underline"
+                                                            >
+                                                                Mark read
+                                                            </button>
+                                                        )}
                                                         <button 
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                markAsRead();
+                                                                deleteNotification(n.id);
                                                             }}
-                                                            className="mt-3 text-[9px] font-black text-primary-main uppercase tracking-widest hover:underline"
+                                                            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline flex items-center gap-1"
                                                         >
-                                                            Mark read
+                                                            <Trash2 className="w-3 h-3" />
+                                                            Delete
                                                         </button>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

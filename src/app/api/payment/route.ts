@@ -19,13 +19,13 @@ export async function POST(req: Request) {
             data: { status: "Pending" }
         });
 
-        // 2. Add transaction record
+        // 2. Add transaction record (Hold)
         await prisma.transaction.create({
             data: {
-                title: "Payment to Sitter",
-                amount: -Math.abs(amount), // Deduct money
-                type: "Debit",
-                status: "Success",
+                title: "Payment Held (Pending Caregiver Approval)",
+                amount: 0, // Do NOT deduct money yet
+                type: "Hold",
+                status: "Pending",
                 userId: (session.user as any).id
             }
         });
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
             where: { id: updatedBooking.sitterId }
         });
         
-        if (sitter) {
+        if (sitter && sitter.userId) {
             await prisma.notification.create({
                 data: {
                     title: "New Booking Request!",

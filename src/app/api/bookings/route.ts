@@ -11,7 +11,11 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { sitterId, service, date, time, instructions, totalPrice, petName } = body;
+        const { sitterId, service, date, time, instructions, emergencyContact, vetDetails, totalPrice, petName } = body;
+
+        let fullInstructions = instructions || "";
+        if (emergencyContact) fullInstructions += `\nEmergency Contact: ${emergencyContact}`;
+        if (vetDetails) fullInstructions += `\nVet Details: ${vetDetails}`;
 
         // In a real app we'd fetch or create a pet associated with this user.
         // For simplicity, we just save the instructions and no pet id relation directly or create a dummy pet.
@@ -34,7 +38,7 @@ export async function POST(req: Request) {
                 service,
                 date,
                 time,
-                instructions,
+                instructions: fullInstructions.trim(),
                 status: "Pending",
                 totalPrice: parseInt(totalPrice),
                 userId: session.user.id,

@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Send, User } from "lucide-react";
+import { ArrowLeft, Send, User, Phone, Video } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
@@ -128,10 +128,20 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                     <div className="w-10 h-10 bg-primary-light/30 dark:bg-gray-800 rounded-full flex items-center justify-center shrink-0">
                         <User className="w-5 h-5 text-primary-main" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                         <h2 className="font-bold text-gray-900 dark:text-white leading-tight">Chat</h2>
                         <p className="text-xs text-green-500 font-medium">Online</p>
                     </div>
+                    <Link href={`/videocall/${id}`}>
+                        <Button variant="ghost" size="icon" className="text-primary-main hover:bg-primary-light/20 rounded-full">
+                            <Phone className="w-5 h-5 fill-current opacity-80" />
+                        </Button>
+                    </Link>
+                    <Link href={`/videocall/${id}?video=true`}>
+                        <Button variant="ghost" size="icon" className="text-primary-main hover:bg-primary-light/20 rounded-full">
+                            <Video className="w-5 h-5 fill-current opacity-80" />
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Messages Area */}

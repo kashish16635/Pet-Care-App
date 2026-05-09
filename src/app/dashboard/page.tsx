@@ -7,7 +7,13 @@ import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { CalendarHeart, MapPin, Clock, CreditCard, ChevronRight, Bell, Loader2, Video } from "lucide-react";
+import { 
+    CalendarHeart, MapPin, Clock, CreditCard, ChevronRight, 
+    Bell, Loader2, Video, ShieldCheck, Heart, MessageCircle, 
+    Smartphone, Star, Camera, Trash2, Shield, Zap, CheckCircle2,
+    Plus, X
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 function DashboardContent() {
     const searchParams = useSearchParams();
@@ -18,17 +24,45 @@ function DashboardContent() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchDashboardData = () => {
-        fetch("/api/dashboard")
-            .then(res => res.json())
-            .then(d => {
-                setData(d);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
+    // Health Center States
+    const [healthRecords, setHealthRecords] = useState({
+        vaccines: [
+            { id: 1, name: "Rabies Vaccine", date: "2026-06-15", status: "Soon", color: "orange" },
+            { id: 2, name: "DHPP Booster", date: "2026-08-22", status: "Scheduled", color: "green" }
+        ],
+        medical: [
+            { id: 1, title: "Annual Health Checkup", desc: "Dr. Kapoor • All vitals normal", date: "2026-03-12" }
+        ]
+    });
+    const [showHealthModal, setShowHealthModal] = useState(false);
+    const [newRecord, setNewRecord] = useState({ type: "vaccine", name: "", date: "", desc: "" });
+
+    // Review Modal States
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<any>(null);
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState("");
+    const [photos, setPhotos] = useState<string[]>([]);
+    const [reviewLoading, setReviewLoading] = useState(false);
+
+    // Load from local storage on mount
+    useEffect(() => {
+        const saved = localStorage.getItem("petHealthRecords");
+        if (saved) setHealthRecords(JSON.parse(saved));
+    }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            const res = await fetch("/api/dashboard");
+            if (res.ok) {
+                const data = await res.json();
+                setData(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch dashboard data:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -37,26 +71,70 @@ function DashboardContent() {
         }
     }, [status]);
 
-    const handleCancel = async (bookingId: string) => {
-        if (!confirm("Are you sure you want to cancel this booking?")) return;
+    const addHealthRecord = () => {
+        if (!newRecord.name || !newRecord.date) {
+            alert("Please fill all required fields!");
+            return;
+        }
         
-        try {
-            const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
-                method: "PUT"
+        const updated = { ...healthRecords };
+        if (newRecord.type === "vaccine") {
+            updated.vaccines = [
+                { id: Date.now(), name: newRecord.name, date: newRecord.date, status: "Scheduled", color: "blue" },
+                ...updated.vaccines
+            ];
+        } else {
+            updated.medical = [
+                { id: Date.now(), title: newRecord.name, desc: newRecord.desc, date: newRecord.date },
+                ...updated.medical
+            ];
+        }
+        
+        setHealthRecords(updated);
+        localStorage.setItem("petHealthRecords", JSON.stringify(updated));
+        setShowHealthModal(false);
+        setNewRecord({ type: "vaccine", name: "", date: "", desc: "" });
+    };
+
+    const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPhotos(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
             });
-            if (res.ok) {
-                alert("Booking cancelled successfully.");
-                fetchDashboardData(); // Refresh data
-            } else {
-                alert("Failed to cancel booking.");
-            }
-        } catch (error) {
-            console.error(error);
         }
     };
 
-    const handleContact = (name: string) => {
-        alert(`Contacting ${name}...\nPhone: +91 98765-43210\n(Messaging system coming soon!)`);
+    const handleCancel = async (bookingId: string) => {
+        if (!confirm("Are you sure you want to cancel this booking?")) return;
+        try {
+            const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: "PUT" });
+            if (res.ok) {
+                alert("Booking cancelled successfully.");
+                fetchDashboardData();
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const handleSubmitReview = async () => {
+        if (!selectedBooking) return;
+        setReviewLoading(true);
+        try {
+            const res = await fetch("/api/reviews", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ bookingId: selectedBooking.id, sitterId: selectedBooking.sitterId, rating, comment, photos })
+            });
+            if (res.ok) {
+                alert("Thank you for your review!");
+                setShowReviewModal(false);
+                fetchDashboardData();
+            }
+        } catch (error) { alert("An error occurred"); } finally { setReviewLoading(false); }
     };
 
     if (status === "loading" || loading) {
@@ -70,13 +148,57 @@ function DashboardContent() {
         </div>;
     }
 
-    const { upcomingBooking, pastBookings, balance, notifications } = data;
+    const { upcomingBooking, pastBookings, balance } = data;
 
     return (
         <main className="flex-1 pt-24 pb-12 w-full max-w-7xl mx-auto px-4 sm:px-6">
+            
+            {/* Health Modal */}
+            <AnimatePresence>
+                {showHealthModal && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowHealthModal(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800"
+                        >
+                            <button onClick={() => setShowHealthModal(false)} className="absolute top-6 right-6 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400">
+                                <X className="w-5 h-5" />
+                            </button>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tighter mb-6">Add Health Record</h2>
+                            
+                            <div className="space-y-5">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 block ml-1">Type</label>
+                                    <div className="flex gap-2 p-1 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                                        <button onClick={() => setNewRecord({...newRecord, type: 'vaccine'})} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newRecord.type === 'vaccine' ? 'bg-white dark:bg-gray-700 shadow-sm text-rose-500' : 'text-gray-400'}`}>Vaccine</button>
+                                        <button onClick={() => setNewRecord({...newRecord, type: 'medical'})} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newRecord.type === 'medical' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-500' : 'text-gray-400'}`}>Medical</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 block ml-1">Name</label>
+                                    <input type="text" value={newRecord.name} onChange={(e) => setNewRecord({...newRecord, name: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 text-sm font-bold" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 block ml-1">Date</label>
+                                    <input type="date" value={newRecord.date} onChange={(e) => setNewRecord({...newRecord, date: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 text-sm font-bold" />
+                                </div>
+                                {newRecord.type === 'medical' && (
+                                    <textarea placeholder="Note..." value={newRecord.desc} onChange={(e) => setNewRecord({...newRecord, desc: e.target.value})} className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 text-sm font-bold h-24" />
+                                )}
+                                <Button onClick={addHealthRecord} className="w-full py-8 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-xs">Save Record</Button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {isSuccess && (
-                <div className="bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400 p-4 rounded-2xl mb-8 flex items-center justify-between animate-in slide-in-from-top-4">
+                <div className="bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400 p-4 rounded-2xl mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-green-500 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold">✓</div>
                         <p className="font-medium">Booking Confirmed! The sitter has been notified.</p>
@@ -90,169 +212,125 @@ function DashboardContent() {
                     <p className="text-gray-500 dark:text-gray-400">Here's an overview of your pet care activities.</p>
                 </div>
                 <div className="flex gap-4">
-                    <Link href="/profile">
-                        <Button variant="outline" className="hidden sm:flex">My Pets & Profile</Button>
-                    </Link>
-                    <Link href="/search">
-                        <Button><CalendarHeart className="w-5 h-5 mr-2" /> Book New Service</Button>
-                    </Link>
+                    <Link href="/profile"><Button variant="outline" className="hidden sm:flex">My Pets & Profile</Button></Link>
+                    <Link href="/search"><Button><CalendarHeart className="w-5 h-5 mr-2" /> Book New Service</Button></Link>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content Area */}
                 <div className="lg:col-span-2 flex flex-col gap-8">
                     
-                    {/* Upcoming Active Booking */}
+                    {/* Upcoming Booking */}
                     {upcomingBooking && (
                         <section className="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-800">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Upcoming Booking</h2>
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                                    upcomingBooking.status === "Pending" 
-                                    ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" 
-                                    : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                                }`}>
-                                    {upcomingBooking.status}
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Upcoming Booking</h2>
+                            <div onClick={() => router.push(`/sitter/${upcomingBooking.sitterId}`)} className="flex flex-col sm:flex-row gap-6 items-start sm:items-center bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 cursor-pointer group transition-all hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-light to-secondary-light flex items-center justify-center shadow-sm">
+                                    <span className="text-2xl font-bold text-primary-main">{upcomingBooking.sitter?.name.charAt(0)}</span>
                                 </div>
-                            </div>
-
-                            <div 
-                                onClick={() => router.push(`/sitter/${upcomingBooking.sitterId}`)}
-                                className="flex flex-col sm:flex-row gap-6 items-start sm:items-center bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 cursor-pointer group transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
-                            >
-                                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-light to-secondary-light shrink-0 flex flex-col items-center justify-center shadow-sm">
-                                    <span className="text-2xl font-bold text-primary-main group-hover:scale-110 transition-transform">{upcomingBooking.sitter?.name.charAt(0) || "S"}</span>
-                                </div>
-
-                                <div className="flex-1 w-full">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary-main transition-colors">{upcomingBooking.sitter?.name || "Sitter"}</h3>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{upcomingBooking.sitter?.name}</h3>
                                     <p className="text-gray-600 dark:text-gray-300 font-medium mb-3">{upcomingBooking.service}</p>
-
-                                    <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                                    <div className="flex gap-4 text-sm text-gray-500">
                                         <div className="flex items-center gap-1.5"><CalendarHeart className="w-4 h-4 text-primary-main" /> {upcomingBooking.date}</div>
                                         <div className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-secondary-main" /> {upcomingBooking.time}</div>
-                                        <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {upcomingBooking.sitter?.location || "Your Location"}</div>
                                     </div>
                                 </div>
-
-                                <div className="flex flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0" onClick={(e) => e.stopPropagation()}>
-                                    {(upcomingBooking.status === "Confirmed" || upcomingBooking.status === "Completed") && (
-                                        <Link href={`/videocall/${upcomingBooking.id}`}>
-                                            <Button className="w-full sm:w-auto font-bold bg-primary-main hover:bg-primary-dark text-white">
-                                                <Video className="w-4 h-4 mr-2" /> Video Call
-                                            </Button>
-                                        </Link>
-                                    )}
-                                    <Button variant="outline" className="w-full sm:w-auto font-bold" onClick={() => handleContact(upcomingBooking.sitter?.name)}>Contact</Button>
-                                    <Button variant="ghost" className="w-full sm:w-auto text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 font-bold" onClick={() => handleCancel(upcomingBooking.id)}>Cancel</Button>
+                                <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+                                    <Link href={`/tracking/${upcomingBooking.id}`}><Button size="sm" className="bg-indigo-600">Track</Button></Link>
+                                    <Link href={`/videocall/${upcomingBooking.id}`}><Button size="sm">Call</Button></Link>
                                 </div>
                             </div>
                         </section>
                     )}
 
-                    {/* Past Bookings */}
-                    <section className="bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-800">
+                    {/* Past Care */}
+                    <section className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-800">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Past Care</h2>
-
                         <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {pastBookings?.length === 0 && <p className="text-gray-500 py-4">No past bookings found.</p>}
                             {pastBookings?.map((b: any) => (
-                                <div 
-                                    key={b.id} 
-                                    onClick={() => router.push(`/sitter/${b.sitterId}`)}
-                                    className="py-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 px-2 rounded-xl transition-all"
-                                >
+                                <div key={b.id} className="py-4 flex items-center justify-between group">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                            <span className="font-bold text-gray-500 dark:text-gray-400">{b.sitter?.name.charAt(0)}</span>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900 dark:text-white group-hover:text-primary-main transition-colors">{b.sitter?.name}</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{b.service} • {b.date}</p>
-                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-500">{b.sitter?.name.charAt(0)}</div>
+                                        <div><p className="font-bold text-gray-900 dark:text-white">{b.sitter?.name}</p><p className="text-xs text-gray-500">{b.service} • {b.date}</p></div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {b.status === "Completed" && (
-                                            <Link href={`/videocall/${b.id}`} onClick={(e) => e.stopPropagation()}>
-                                                <Button variant="ghost" size="sm" className="p-2 h-auto text-primary-main hover:bg-primary-light/20">
-                                                    <Video className="w-4 h-4" />
-                                                </Button>
-                                            </Link>
-                                        )}
-                                        <Link href={`/book/${b.sitterId}`} onClick={(e) => e.stopPropagation()}>
-                                            <Button variant="outline" size="sm" className="hidden sm:flex font-bold rounded-xl hover:bg-primary-main hover:text-white transition-all">Rebook</Button>
-                                        </Link>
-                                        <ChevronRight className="w-5 h-5 text-gray-400" />
-                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => router.push(`/book/${b.sitterId}`)}>Rebook</Button>
                                 </div>
                             ))}
                         </div>
+                    </section>
 
-                        {pastBookings?.length > 0 && (
-                            <Link href="/history">
-                                <Button variant="link" className="mt-4 p-0 font-bold text-primary-main hover:underline decoration-2 underline-offset-4">
-                                    View all history →
-                                </Button>
-                            </Link>
-                        )}
+                    {/* Pet Health Center - FUNCTIONAL */}
+                    <section className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2"><Shield className="w-5 h-5 text-rose-500" /> Pet Health Center</h2>
+                                <p className="text-xs text-gray-400 font-medium uppercase tracking-widest mt-1">Medical Records & Vaccinations</p>
+                            </div>
+                            <Button onClick={() => setShowHealthModal(true)} variant="ghost" className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-rose-100">Add Record +</Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Zap className="w-3.5 h-3.5 text-orange-500" /> Vaccination Tracker</h3>
+                                <div className="space-y-3">
+                                    {healthRecords.vaccines.map((v: any) => (
+                                        <div key={v.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                            <div><p className="text-sm font-bold text-gray-900 dark:text-white">{v.name}</p><p className="text-[10px] text-gray-400 font-bold uppercase">Due: {v.date}</p></div>
+                                            <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${v.color === 'orange' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>{v.status}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-blue-500" /> Recent Records</h3>
+                                <div className="space-y-3">
+                                    {healthRecords.medical.map((m: any) => (
+                                        <div key={m.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 flex gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-blue-500 shadow-sm"><CheckCircle2 className="w-5 h-5" /></div>
+                                            <div><p className="text-sm font-bold text-gray-900 dark:text-white">{m.title}</p><p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-1">{m.desc}</p><p className="text-[9px] text-gray-400 font-black uppercase mt-2">{m.date}</p></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </section>
                 </div>
 
-                {/* Sidebar Area */}
+                {/* Sidebar */}
                 <div className="flex flex-col gap-8">
-                    {/* Wallet & Payments */}
                     <section className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-light/50 dark:bg-primary-main/20 rounded-bl-full -z-10" />
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Paws Wallet</h3>
-                            <CreditCard className="w-5 h-5 text-gray-400" />
-                        </div>
-
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-lg font-bold text-gray-900 dark:text-white">Paws Wallet</h3><CreditCard className="w-5 h-5 text-gray-400" /></div>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">Available Balance</p>
                         <p className="text-3xl font-heading font-bold text-gray-900 dark:text-white mb-6">₹{balance?.toLocaleString()}</p>
-
-                        <div className="flex gap-2">
-                            <Link href="/wallet" className="w-full">
-                                <Button className="w-full" size="sm">Open Wallet</Button>
-                            </Link>
-                        </div>
+                        <Link href="/wallet"><Button className="w-full" size="sm">Open Wallet</Button></Link>
                     </section>
-
-                    {/* Notifications */}
-                    <section className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Notifications</h3>
-                            <div className="relative">
-                                <Bell className="w-5 h-5 text-gray-400" />
-                                {notifications?.filter((n: any) => !n.read).length > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900" />
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            {notifications?.length === 0 && <p className="text-gray-500 text-sm">No new notifications.</p>}
-                            {notifications?.map((n: any) => (
-                                <div key={n.id} className="flex gap-3">
-                                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${n.read ? 'bg-gray-300 dark:bg-gray-700' : 'bg-primary-main'}`} />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{n.type === "success" ? "Alert" : "Reminder"}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        
-                        <button 
-                            onClick={() => window.dispatchEvent(new CustomEvent('open-notifications-drawer'))}
-                            className="block mt-6 w-full h-10 px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-600 dark:text-gray-300 font-bold text-center"
-                        >
-                            View All Notifications →
-                        </button>
+                    
+                    <section className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950/20 rounded-3xl p-6 border border-indigo-100">
+                        <h3 className="text-md font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-tight mb-4 flex items-center gap-2"><Smartphone className="w-5 h-5" /> Travel Stress-Free</h3>
+                        <p className="text-[11px] font-bold text-indigo-700/70 dark:text-indigo-300/60 leading-relaxed">Join thousands of frequent travelers who trust us for total peace of mind.</p>
                     </section>
                 </div>
             </div>
+
+            {/* Review Modal */}
+            <AnimatePresence>
+                {showReviewModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white dark:bg-gray-900 rounded-[3rem] w-full max-w-md p-10 border border-gray-100">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase text-center mb-6">Rate Experience</h3>
+                            <div className="flex justify-center gap-2 mb-8">
+                                {[1,2,3,4,5].map(s => <button key={s} onClick={() => setRating(s)}><Star className={`w-10 h-10 ${s <= rating ? 'text-amber-500 fill-amber-500' : 'text-gray-200'}`} /></button>)}
+                            </div>
+                            <textarea placeholder="Tell us more..." value={comment} onChange={e => setComment(e.target.value)} className="w-full px-6 py-4 rounded-3xl bg-gray-50 dark:bg-gray-800 mb-6 h-32" />
+                            <div className="flex gap-4">
+                                <Button variant="ghost" className="flex-1" onClick={() => setShowReviewModal(false)}>Cancel</Button>
+                                <Button onClick={handleSubmitReview} disabled={reviewLoading} className="flex-1 bg-amber-500 text-white shadow-lg shadow-amber-500/20">{reviewLoading ? "..." : "Submit"}</Button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }
@@ -261,11 +339,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans flex flex-col">
             <Navbar />
-            <Suspense fallback={
-                <div className="flex-1 flex items-center justify-center p-24">
-                    <div className="w-10 h-10 border-4 border-primary-light border-t-primary-main rounded-full animate-spin" />
-                </div>
-            }>
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary-main" /></div>}>
                 <DashboardContent />
             </Suspense>
             <Footer />

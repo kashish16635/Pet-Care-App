@@ -116,12 +116,17 @@ function PaymentForm() {
 
                     {paymentMethod === 'upi' && (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-300 mb-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center text-sm text-gray-600 dark:text-gray-300">
-                            You will be redirected to your UPI app (Google Pay, PhonePe, Paytm) to complete the payment.
+                            You will be redirected to your UPI app (Google Pay, PhonePe, Paytm) to authorize the payment.
                         </div>
                     )}
 
+                    <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-blue-800 dark:text-blue-300 rounded-xl text-sm flex items-start gap-3">
+                        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
+                        <p><strong>Zero Upfront Charge:</strong> Your account will only be verified. Money will <strong>NOT</strong> be deducted until the caregiver accepts your request.</p>
+                    </div>
+
                     <Button size="lg" type="submit" className="w-full h-14 text-lg" disabled={loading}>
-                        {loading ? "Processing Secure Payment..." : `Pay ₹${parseInt(amount) + 40}`}
+                        {loading ? "Processing..." : `Send Request (Hold ₹${parseInt(amount) + 40})`}
                     </Button>
                     <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
                         <ShieldCheck className="w-4 h-4 text-green-500" /> Secure 256-bit encrypted payment

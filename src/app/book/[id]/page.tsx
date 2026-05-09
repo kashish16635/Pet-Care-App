@@ -20,42 +20,45 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         date: "",
         time: "",
         petName: "",
-        instructions: ""
+        instructions: "",
+        emergencyContact: "",
+        vetDetails: ""
     });
 
     const handleNext = () => setStep(step + 1);
     const handleBack = () => setStep(step - 1);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        if (status !== "authenticated") {
-            router.push("/login?redirect=/book/" + id);
+    // 1. Confirm Booking Logic: Jab user 'Book Now' click karta hai (When the user clicks 'Book Now')
+    const handleBooking = async () => {
+        if (!bookingData.petName) {
+            alert("Please provide your pet's name first!");
             return;
         }
 
         setLoading(true);
-
         try {
+            // Backend API ko booking request bhejna (Sending booking request to the Backend API)
             const res = await fetch("/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     sitterId: id,
                     ...bookingData,
-                    totalPrice: 800 // Hardcoded base price, usually fetched via sitter object
-                })
+                    totalPrice: 800
+                }),
             });
 
-            const data = await res.json();
-            
             if (res.ok) {
+                // Booking success hone par payment page par bhej dena (Redirecting to payment page after successful booking)
+                const data = await res.json();
                 router.push(`/payment?bookingId=${data.booking.id}&amount=800`);
             } else {
-                alert("Booking step failed. Check console.");
+                const data = await res.json();
+                alert(data.message || "Booking failed");
             }
         } catch (error) {
-            console.error("Booking failed:", error);
+            console.error("Booking error:", error);
+            alert("Something went wrong");
         } finally {
             setLoading(false);
         }
@@ -97,6 +100,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                                         <option value="Pet Sitting">Pet Sitting (At your home)</option>
                                         <option value="Dog Walking">Dog Walking (30-60 mins)</option>
                                         <option value="Boarding">Boarding (Overnight)</option>
+                                        <option value="All-in-One Care">All-in-One Care</option>
                                     </select>
                                 </div>
 
@@ -156,12 +160,35 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Special Instructions / Medical Needs</label>
                                     <textarea
-                                        rows={4}
+                                        rows={3}
                                         placeholder="E.g., Needs medication at 2 PM. Allergic to chicken."
                                         value={bookingData.instructions}
                                         onChange={(e) => setBookingData({ ...bookingData, instructions: e.target.value })}
                                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none dark:text-white resize-none"
                                     />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Emergency Contact</label>
+                                        <input
+                                            type="tel"
+                                            placeholder="Friend/Family number"
+                                            value={bookingData.emergencyContact}
+                                            onChange={(e) => setBookingData({ ...bookingData, emergencyContact: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vet Details</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Vet Name & Number"
+                                            value={bookingData.vetDetails}
+                                            onChange={(e) => setBookingData({ ...bookingData, vetDetails: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary-main outline-none dark:text-white"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -201,14 +228,12 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                                 <p>You won't be charged securely until confirmed via Paws Wallet.</p>
                             </div>
 
-                            <div className="mt-10 flex justify-between items-center">
-                                <Button variant="ghost" size="lg" onClick={handleBack} disabled={loading}>Back</Button>
-                                <form onSubmit={handleSubmit}>
-                                    <Button size="lg" type="submit" disabled={loading} className="w-48">
+                                <div className="mt-10 flex justify-between items-center">
+                                    <Button variant="ghost" size="lg" onClick={handleBack} disabled={loading}>Back</Button>
+                                    <Button size="lg" onClick={handleBooking} disabled={loading} className="w-48">
                                         {loading ? "Processing..." : "Continue to Payment"}
                                     </Button>
-                                </form>
-                            </div>
+                                </div>
                         </div>
                     )}
 

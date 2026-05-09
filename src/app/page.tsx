@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
     <div className="min-h-screen bg-background-soft font-sans">
       <Navbar />
@@ -79,17 +82,27 @@ export default function Home() {
                 </div>
 
                 {/* Floating Badge */}
-                <div className="absolute -bottom-6 -left-6 bg-glass p-4 rounded-2xl shadow-lg border border-white/40 dark:border-gray-700 backdrop-blur-md">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Heart className="w-5 h-5 text-green-600" />
+                <Link href="/subscription">
+                  <motion.div 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="absolute -bottom-6 -left-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl px-4 py-3 rounded-[2rem] shadow-[0_20px_40px_rgba(244,63,94,0.15)] border border-rose-100 dark:border-rose-900/30 cursor-pointer z-20 flex items-center gap-3 group"
+                  >
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary-main rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+                      <div className="relative h-10 w-10 bg-gradient-to-tr from-primary-main to-rose-400 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-800">
+                        <Heart className="w-5 h-5 text-white fill-white/20 animate-pulse" />
+                      </div>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">Emergency Support</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-300">24/7 Available in Metro Cities</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-wider">Emergency Support</span>
+                        <div className="flex h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                      </div>
+                      <p className="text-[10px] font-black text-primary-main/80 uppercase tracking-[0.15em] mt-0.5">24/7 Available</p>
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </Link>
               </motion.div>
             </div>
           </div>
@@ -166,21 +179,37 @@ export default function Home() {
               <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gray-200 dark:bg-gray-800 -z-10" />
 
               {[
-                { step: 1, title: "Search", desc: "Browse through our verified nearby professionals.", icon: <Search /> },
-                { step: 2, title: "Book", desc: "Select services, dates, and customize care.", icon: <CalendarCheck /> },
-                { step: 3, title: "Track", desc: "Get live updates on WhatsApp, photos, and camera feeds.", icon: <Smartphone /> },
-                { step: 4, title: "Review", desc: "Share your experience and give ratings.", icon: <Star /> },
+                { step: 1, title: "Search", desc: "Browse through our verified nearby professionals.", icon: <Search />, href: "/search" },
+                { step: 2, title: "Book", desc: "Select services, dates, and customize care.", icon: <CalendarCheck />, href: "/search" },
+                { step: 3, title: "Track", desc: "Get live updates with photos, and camera feeds.", icon: <Smartphone />, href: "/dashboard" },
+                { step: 4, title: "Review", desc: "Share your experience and give ratings.", icon: <Star />, href: "/history" },
               ].map((item, i) => (
-                <div key={item.step} className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-900 border-4 border-gray-50 dark:border-gray-800 shadow-xl flex items-center justify-center mb-6 text-primary-main z-10 relative">
-                    <span className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-secondary-main text-white font-bold flex items-center justify-center text-sm shadow-md">
-                      {item.step}
-                    </span>
-                    {item.icon}
-                  </div>
-                  <h3 className="font-heading font-bold text-xl mb-2 text-gray-900 dark:text-white">{item.title}</h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm max-w-[200px]">{item.desc}</p>
-                </div>
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: i * 0.15, type: "spring" }}
+                >
+                  <Link href={item.href} className="group block">
+                    <div className="flex flex-col items-center">
+                      <motion.div 
+                        whileHover={{ y: -15, scale: 1.1, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-24 h-24 rounded-full bg-white dark:bg-gray-900 border-4 border-gray-50 dark:border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.05)] group-hover:shadow-[0_20px_40px_rgba(244,63,94,0.2)] flex items-center justify-center mb-6 text-primary-main group-hover:text-secondary-main group-hover:border-secondary-main/30 transition-all duration-300 z-10 relative"
+                      >
+                        <span className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-secondary-main text-white font-black flex items-center justify-center text-sm shadow-md group-hover:animate-bounce">
+                          {item.step}
+                        </span>
+                        <div className="group-hover:scale-110 transition-transform duration-300">
+                           {item.icon}
+                        </div>
+                      </motion.div>
+                      <h3 className="font-heading font-black text-xl mb-2 text-gray-900 dark:text-white group-hover:text-primary-main transition-colors">{item.title}</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm max-w-[200px] font-medium leading-relaxed">{item.desc}</p>
+                    </div>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -215,7 +244,9 @@ export default function Home() {
             <Heart className="w-16 h-16 mx-auto text-primary-main mb-6 animate-bounce" />
             <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6 text-gray-900 dark:text-white">Give Your Pet the Love They Deserve ❤️</h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-10">Join thousands of happy pet parents today.</p>
-            <Button size="lg" className="px-12 py-6 text-lg rounded-full shadow-xl shadow-primary-main/30">Get Started Now</Button>
+            <Link href={session ? "/search" : "/signup"}>
+              <Button size="lg" className="px-12 py-6 text-lg rounded-full shadow-xl shadow-primary-main/30">Get Started Now</Button>
+            </Link>
           </div>
         </section>
       </main>
