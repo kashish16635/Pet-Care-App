@@ -35,7 +35,8 @@ export const authOptions: NextAuthOptions = {
                     name: user.name,
                     email: user.email,
                     image: user.image,
-                    role: user.role
+                    role: user.role,
+                    isPro: user.isPro
                 };
             }
         })
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
+                token.isPro = user.isPro;
             }
             if (trigger === "update" && session?.name) {
                 token.name = session.name;
@@ -62,6 +64,7 @@ export const authOptions: NextAuthOptions = {
             if (session.user) {
                 session.user.id = token.id as string;
                 session.user.role = token.role as string;
+                session.user.isPro = token.isPro as boolean;
             }
             return session;
         }

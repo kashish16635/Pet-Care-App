@@ -139,17 +139,7 @@ export default function CaregiverBookings() {
                                                 {booking.instructions && <p className="text-gray-600 dark:text-gray-300 text-sm mt-2 italic whitespace-pre-wrap border-l-2 border-primary-main/30 pl-3">"{booking.instructions}"</p>}
                                                 <p className="font-bold text-primary-main mt-2">₹{booking.totalPrice}</p>
 
-                                                {/* Emergency Action Buttons */}
-                                                {booking.instructions && booking.instructions.includes("Emergency Contact") && (
-                                                    <div className="flex gap-3 mt-4">
-                                                        <a
-                                                            href={`tel:${booking.instructions.match(/Emergency Contact:\s*([^\n]+)/)?.[1]?.replace(/\D/g, '') || ""}`}
-                                                            className="flex items-center gap-1.5 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
-                                                        >
-                                                            <Phone className="w-4 h-4 shrink-0" /> SOS Call
-                                                        </a>
-                                                    </div>
-                                                )}
+
                                             </div>
                                         </div>
                                         <div className="shrink-0 flex flex-col gap-2">
@@ -158,6 +148,7 @@ export default function CaregiverBookings() {
                                                     <Video className="w-4 h-4 mr-2" /> Join Video Call
                                                 </Button>
                                             </Link>
+
                                             <Button onClick={() => updateBookingStatus(booking.id, "Completed")} className="bg-primary-main hover:bg-primary-dark text-white font-bold">
                                                 Mark Completed
                                             </Button>

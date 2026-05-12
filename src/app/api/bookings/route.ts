@@ -13,6 +13,29 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { sitterId, service, date, time, instructions, emergencyContact, vetDetails, totalPrice, petName } = body;
 
+        // --- PRO LIMITATION CHECK ---
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { isPro: true }
+        });
+
+        if (!user?.isPro) {
+            const activeBookingsCount = await prisma.booking.count({
+                where: {
+                    userId: session.user.id,
+                    status: { in: ["Pending", "Confirmed"] }
+                }
+            });
+
+            if (activeBookingsCount >= 2) {
+                return NextResponse.json({ 
+                    message: "Free tier limit reached! Please upgrade to Pro for unlimited bookings.",
+                    limitReached: true 
+                }, { status: 403 });
+            }
+        }
+        // --- END CHECK ---
+
         let fullInstructions = instructions || "";
         if (emergencyContact) fullInstructions += `\nEmergency Contact: ${emergencyContact}`;
         if (vetDetails) fullInstructions += `\nVet Details: ${vetDetails}`;

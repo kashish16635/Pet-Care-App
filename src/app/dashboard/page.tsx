@@ -11,7 +11,7 @@ import {
     CalendarHeart, MapPin, Clock, CreditCard, ChevronRight, 
     Bell, Loader2, Video, ShieldCheck, Heart, MessageCircle, 
     Smartphone, Star, Camera, Trash2, Shield, Zap, CheckCircle2,
-    Plus, X
+    Plus, X, Crown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -306,10 +306,28 @@ function DashboardContent() {
                         <Link href="/wallet"><Button className="w-full" size="sm">Open Wallet</Button></Link>
                     </section>
                     
-                    <section className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950/20 rounded-3xl p-6 border border-indigo-100">
-                        <h3 className="text-md font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-tight mb-4 flex items-center gap-2"><Smartphone className="w-5 h-5" /> Travel Stress-Free</h3>
-                        <p className="text-[11px] font-bold text-indigo-700/70 dark:text-indigo-300/60 leading-relaxed">Join thousands of frequent travelers who trust us for total peace of mind.</p>
-                    </section>
+                    {session?.user?.isPro ? (
+                        <section className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/10 dark:to-orange-950/10 rounded-3xl p-6 border border-amber-100 dark:border-amber-900/30">
+                            <h3 className="text-md font-black text-amber-900 dark:text-amber-100 uppercase tracking-tight mb-4 flex items-center gap-2"><Crown className="w-5 h-5 text-amber-500" /> Premium Member</h3>
+                            <p className="text-[11px] font-bold text-amber-700/70 dark:text-amber-300/60 leading-relaxed mb-6">You have unlimited bookings and 24/7 priority support enabled.</p>
+                            <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 py-6 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-2">
+                                <MessageCircle className="w-4 h-4" /> Priority Vet Chat
+                            </Button>
+                        </section>
+                    ) : (
+                        <section className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/10 dark:to-blue-950/10 rounded-3xl p-6 border border-indigo-100 dark:border-indigo-900/30">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Zap className="w-5 h-5 text-indigo-500 animate-pulse" />
+                                <h3 className="text-md font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-tight">Free Tier</h3>
+                            </div>
+                            <p className="text-[11px] font-bold text-indigo-700/70 dark:text-indigo-300/60 leading-relaxed mb-6">You are currently on the free tier with a limit of 2 active bookings.</p>
+                            <Link href="/subscription">
+                                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 py-6 rounded-2xl font-black uppercase tracking-widest text-[10px]">
+                                    Upgrade to PRO
+                                </Button>
+                            </Link>
+                        </section>
+                    )}
                 </div>
             </div>
 

@@ -107,6 +107,8 @@ export default function CaregiverDashboard() {
                                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
+
+
                     </div>
 
                     {/* Right: Bookings & Activity */}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
@@ -13,15 +14,28 @@ export default function SubscriptionPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const router = useRouter();
 
+    const { update } = useSession();
+
     // Ye function payment process simulate karta hai
-    const handleUpgrade = (planName: string) => {
+    const handleUpgrade = async (planName: string) => {
         setIsProcessing(true);
-        setTimeout(() => {
+        try {
+            const res = await fetch("/api/user/upgrade", { method: "POST" });
+            if (res.ok) {
+                // Session update logic
+                await update();
+                
+                setIsProcessing(false);
+                alert(`Payment Successful! You are now a ${planName} member.`);
+                router.push("/dashboard?success=true&pro=true");
+            } else {
+                throw new Error("Failed to upgrade");
+            }
+        } catch (error) {
+            console.error(error);
             setIsProcessing(false);
-            alert(`Payment Successful! You are now a ${planName} member.`);
-            // Success hone par dashboard par redirect karna aur Pro badge activate karna
-            router.push("/dashboard?success=true&pro=true");
-        }, 2000);
+            alert("Something went wrong with the payment. Please try again.");
+        }
     };
 
     const plans = [

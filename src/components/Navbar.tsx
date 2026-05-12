@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "./ui/Button";
-import { Menu, X, PawPrint, Moon, Settings, ChevronDown, User, LifeBuoy, LogOut, Sun, Bell, Trash2 } from "lucide-react";
+import { Menu, X, PawPrint, Moon, Settings, ChevronDown, User, LifeBuoy, LogOut, Sun, Bell, Trash2, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 
@@ -121,6 +121,10 @@ export function Navbar() {
                             <Link href="/profile" className="hover:text-primary-main transition-colors text-[13px] tracking-tight">Profile</Link>
                             <Link href="/wallet" className="hover:text-primary-main transition-colors text-[13px] tracking-tight">Wallet</Link>
                             <Link href="/search" className="hover:text-primary-main transition-colors text-[13px] tracking-tight">Book Service</Link>
+                            <Link href="/subscription" className="flex items-center gap-1.5 hover:text-amber-500 transition-colors text-[13px] tracking-tight group/sub">
+                                <Crown className="w-3.5 h-3.5 text-amber-500 group-hover/sub:animate-bounce" />
+                                Subscription
+                            </Link>
                             
                             {/* Role-based action button */}
                             {session?.user?.role === "CAREGIVER" && (
@@ -246,10 +250,18 @@ export function Navbar() {
                                         )}
                                     </div>
                                     <div className="flex flex-col items-start text-left">
-                                        <span className="text-[13px] font-bold text-gray-900 dark:text-white leading-none mb-0.5">
-                                            {session.user?.name || "User"}
-                                        </span>
-                                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[13px] font-bold text-gray-900 dark:text-white leading-none">
+                                                {session.user?.name || "User"}
+                                            </span>
+                                            {session.user?.isPro && (
+                                                <div className="flex items-center gap-0.5 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                                                    <Crown className="w-2 h-2 text-amber-600 fill-amber-600" />
+                                                    <span className="text-[8px] font-black text-amber-700 uppercase tracking-tighter">PRO</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none mt-0.5">
                                             Owner
                                         </span>
                                     </div>
@@ -358,6 +370,10 @@ export function Navbar() {
                         <Link onClick={() => setIsOpen(false)} href="/wallet" className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-bold text-sm text-gray-700 dark:text-gray-200">Wallet</Link>
 
                         <Link onClick={() => setIsOpen(false)} href="/search" className="px-4 py-3 bg-primary-light/10 text-primary-main dark:bg-primary-main/10 rounded-xl font-bold text-sm mb-2">Book Service</Link>
+                        <Link onClick={() => setIsOpen(false)} href="/subscription" className="px-4 py-3 bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-500 rounded-xl font-bold text-sm mb-2 flex items-center gap-2">
+                            <Crown className="w-4 h-4" />
+                            Premium Subscription
+                        </Link>
                         
                         {session?.user?.role === "CAREGIVER" && (
                             <Link onClick={() => setIsOpen(false)} href="/caregiver/dashboard" className="px-4 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm mb-2">Go to Partner Portal</Link>

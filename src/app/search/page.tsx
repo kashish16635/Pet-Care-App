@@ -50,6 +50,10 @@ export default function SearchPage() {
     const [providers, setProviders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [userCity, setUserCity] = useState<string | null>(null);
+    const [priceRange, setPriceRange] = useState<number>(5000);
+    const [minRating, setMinRating] = useState<number>(0);
+    const [sortBy, setSortBy] = useState<string>("recommended");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -88,17 +92,23 @@ export default function SearchPage() {
         handleSearch();
     }, [serviceType]);
 
-    // Sort providers so that the ones in the user's city appear at the top
-    const sortedProviders = [...providers].sort((a, b) => {
-        if (!userCity) return 0;
-        // Clean userCity just in case it has full string like "Ujjain, Madhya Pradesh"
-        const cleanUserCity = userCity.split(',')[0].trim().toLowerCase();
-        const aMatches = a.location.toLowerCase().includes(cleanUserCity);
-        const bMatches = b.location.toLowerCase().includes(cleanUserCity);
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        return 0;
-    });
+    // Apply Filters and Sorting
+    const filteredAndSortedProviders = [...providers]
+        .filter(p => p.price <= priceRange && p.rating >= minRating)
+        .sort((a, b) => {
+            if (sortBy === "price-low") return a.price - b.price;
+            if (sortBy === "price-high") return b.price - a.price;
+            if (sortBy === "rating") return b.rating - a.rating;
+            
+            // Default: Recommended (City Match first)
+            if (!userCity) return 0;
+            const cleanUserCity = userCity.split(',')[0].trim().toLowerCase();
+            const aMatches = a.location.toLowerCase().includes(cleanUserCity);
+            const bMatches = b.location.toLowerCase().includes(cleanUserCity);
+            if (aMatches && !bMatches) return -1;
+            if (!aMatches && bMatches) return 1;
+            return 0;
+        });
 
     return (
         <div className="min-h-screen bg-background-soft font-sans flex flex-col">
@@ -182,12 +192,82 @@ export default function SearchPage() {
                             <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-white">
                                 {loading ? "Searching..." : `${providers.length} caregivers found`}
                             </h2>
-                            <Button variant="outline" size="sm" className="hidden md:flex">
-                                <Filter className="w-4 h-4 mr-2" /> Filters
-                            </Button>
+                            <div className="relative">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className={`flex items-center gap-2 ${isFilterOpen ? 'bg-primary-main text-white' : ''}`}
+                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                >
+                                    <Filter className="w-4 h-4" /> 
+                                    {isFilterOpen ? "Close Filters" : "Filters"}
+                                </Button>
+
+                                <AnimatePresence>
+                                    {isFilterOpen && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute top-full right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-6 z-[100]"
+                                        >
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Max Price: ₹{priceRange}</label>
+                                                    <input 
+                                                        type="range" 
+                                                        min="100" 
+                                                        max="5000" 
+                                                        step="100"
+                                                        value={priceRange}
+                                                        onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                                                        className="w-full accent-primary-main"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Min Rating</label>
+                                                    <div className="flex gap-2">
+                                                        {[0, 3, 4, 4.5].map((r) => (
+                                                            <button 
+                                                                key={r}
+                                                                onClick={() => setMinRating(r)}
+                                                                className={`flex-1 py-2 rounded-xl text-[10px] font-bold border transition-all ${minRating === r ? 'bg-primary-main text-white border-primary-main' : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-600'}`}
+                                                            >
+                                                                {r === 0 ? "Any" : `${r}+ ⭐`}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Sort By</label>
+                                                    <select 
+                                                        value={sortBy}
+                                                        onChange={(e) => setSortBy(e.target.value)}
+                                                        className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-xs font-bold outline-none"
+                                                    >
+                                                        <option value="recommended">Recommended</option>
+                                                        <option value="price-low">Price: Low to High</option>
+                                                        <option value="price-high">Price: High to Low</option>
+                                                        <option value="rating">Highest Rated</option>
+                                                    </select>
+                                                </div>
+
+                                                <Button 
+                                                    className="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                                    onClick={() => setIsFilterOpen(false)}
+                                                >
+                                                    Apply Filters
+                                                </Button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
 
-                        {!loading && sortedProviders.map((provider, idx) => (
+                        {!loading && filteredAndSortedProviders.map((provider, idx) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -277,7 +357,7 @@ export default function SearchPage() {
                             </div>
 
                             {/* Sitter Pins - Google Red Teardrop Style */}
-                            {providers.map((provider, idx) => {
+                            {filteredAndSortedProviders.map((provider, idx) => {
                                 const seed = provider.id.charCodeAt(0) + provider.id.charCodeAt(provider.id.length-1);
                                 const top = 20 + (seed % 60); 
                                 const left = 20 + ((seed * 7) % 60); 

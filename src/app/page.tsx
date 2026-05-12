@@ -10,7 +10,7 @@ import { ServiceCard } from "@/components/ui/ServiceCard";
 import { motion } from "framer-motion";
 import {
   Heart, ShieldCheck, MapPin, Clock, Search,
-  CalendarCheck, MessageCircle, Star, Smartphone, Activity, PawPrint
+  CalendarCheck, MessageCircle, Star, Smartphone, Activity, PawPrint, Crown
 } from "lucide-react";
 
 export default function Home() {
@@ -81,25 +81,25 @@ export default function Home() {
                   />
                 </div>
 
-                {/* Floating Badge */}
+                {/* Floating Badge - Subscription */}
                 <Link href="/subscription">
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.98 }}
-                    className="absolute -bottom-6 -left-6 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl px-4 py-3 rounded-[2rem] shadow-[0_20px_40px_rgba(244,63,94,0.15)] border border-rose-100 dark:border-rose-900/30 cursor-pointer z-20 flex items-center gap-3 group"
+                    className="absolute -bottom-6 -left-6 bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl px-5 py-3.5 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-white dark:border-gray-800 cursor-pointer z-20 flex items-center gap-3 group"
                   >
                     <div className="relative">
-                      <div className="absolute inset-0 bg-primary-main rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-                      <div className="relative h-10 w-10 bg-gradient-to-tr from-primary-main to-rose-400 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-800">
-                        <Heart className="w-5 h-5 text-white fill-white/20 animate-pulse" />
+                      <div className="absolute inset-0 bg-amber-500 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+                      <div className="relative h-10 w-10 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center shadow-sm">
+                        <Crown className="w-5 h-5 text-amber-600" />
                       </div>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-wider">Emergency Support</span>
-                        <div className="flex h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                        <span className="text-[12px] font-black text-gray-900 dark:text-white uppercase tracking-wider">Go Pro</span>
+                        <div className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse" />
                       </div>
-                      <p className="text-[10px] font-black text-primary-main/80 uppercase tracking-[0.15em] mt-0.5">24/7 Available</p>
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Exclusive Plans</p>
                     </div>
                   </motion.div>
                 </Link>
