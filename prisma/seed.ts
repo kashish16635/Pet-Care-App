@@ -168,6 +168,71 @@ async function main() {
       about: "Professional pet sitting in the heart of Lucknow.",
       verified: true,
       image: "MG"
+    },
+    {
+      id: "sit_pune_1",
+      name: "Rohan Deshmukh",
+      type: "Pet Walker & Boarding",
+      location: "Koregaon Park, Pune, Maharashtra",
+      distance: "1.8 km away",
+      rating: 4.9,
+      reviews: 82,
+      price: 950,
+      about: "Experienced pet caregiver in Pune. I have a large garden for dogs to play.",
+      verified: true,
+      image: "RD"
+    },
+    {
+      id: "sit_chennai_1",
+      name: "Aisha Rahman",
+      type: "Cat Sitter & Groomer",
+      location: "Adyar, Chennai, Tamil Nadu",
+      distance: "3.2 km away",
+      rating: 4.7,
+      reviews: 35,
+      price: 850,
+      about: "Specialized in cat care and grooming in Chennai. I love all felines!",
+      verified: true,
+      image: "AR"
+    },
+    {
+      id: "sit_kolkata_1",
+      name: "Debashis Roy",
+      type: "Professional Dog Sitter",
+      location: "Salt Lake, Kolkata, West Bengal",
+      distance: "2.1 km away",
+      rating: 4.8,
+      reviews: 56,
+      price: 600,
+      about: "Reliable dog sitting services in Kolkata. Your pet will be in safe hands.",
+      verified: true,
+      image: "DR"
+    },
+    {
+      id: "sit_indore_2",
+      name: "Sneha Kapur",
+      type: "Pet Daycare & Sitter",
+      location: "Saket, Indore, MP",
+      distance: "1.5 km away",
+      rating: 4.9,
+      reviews: 41,
+      price: 1100,
+      about: "Providing a home away from home for your pets in Indore.",
+      verified: true,
+      image: "SKP"
+    },
+    {
+      id: "sit_del_2",
+      name: "Ishaan Malhotra",
+      type: "Dog Walker",
+      location: "Dwarka, Delhi",
+      distance: "2.8 km away",
+      rating: 4.6,
+      reviews: 29,
+      price: 450,
+      about: "Punctual and energetic dog walker in Dwarka. I love long walks with dogs.",
+      verified: true,
+      image: "IM"
     }
   ]
 

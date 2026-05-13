@@ -7,18 +7,19 @@ export async function GET(req: Request) {
     const location = searchParams.get("location");
 
     try {
-        const sitters = await prisma.sitter.findMany({
+        let sitters = await prisma.sitter.findMany({
             where: {
                 AND: [
                     type && type !== "all" ? (
                         type === "all-in-one" 
-                        ? { AND: [{ type: { contains: "Sitter" } }, { type: { contains: "Walker" } }] }
-                        : { type: { contains: type === "boarding" ? "Boarding" : type === "walker" ? "Walker" : "Sitter" } }
+                        ? { OR: [{ type: { contains: "Sitter", mode: 'insensitive' } }, { type: { contains: "Walker", mode: 'insensitive' } }] }
+                        : { type: { contains: type === "boarding" ? "Boarding" : type === "walker" ? "Walker" : "Sitter", mode: 'insensitive' } }
                     ) : {},
                     location ? {
                         OR: location.split(',').map(part => ({
                             location: {
-                                contains: part.trim()
+                                contains: part.trim(),
+                                mode: 'insensitive'
                             }
                         }))
                     } : {}
@@ -26,14 +27,12 @@ export async function GET(req: Request) {
             }
         });
 
-        // If no sitters found, return empty array instead of Bandra fallback
+        // FALLBACK FOR PRESENTATION: If no specific location matches, show featured sitters
         if (sitters.length === 0 && location) {
-            return NextResponse.json([]);
-        }
-        
-        // If DB is empty and no search performed, you might still want some default but let's keep it real
-        if (sitters.length === 0) {
-             return NextResponse.json([]);
+            sitters = await prisma.sitter.findMany({
+                take: 6,
+                orderBy: { rating: 'desc' }
+            });
         }
         
         return NextResponse.json(sitters);
