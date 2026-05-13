@@ -236,6 +236,8 @@ async function main() {
     }
   ]
 
+  console.log('Seeding comprehensive India-wide sitters...')
+
   for (const sitter of sitters) {
     await seedPrisma.sitter.upsert({
       where: { id: sitter.id },
@@ -244,7 +246,29 @@ async function main() {
     })
   }
 
-  console.log('India-wide seeding finished.')
+  // --- DEMO CAREGIVER ACCOUNT (RAHUL VERMA) ---
+  const bcrypt = require('bcryptjs')
+  const hashedPassword = await bcrypt.hash('password123', 10)
+
+  const caregiverUser = await seedPrisma.user.upsert({
+    where: { email: 'rahul@demo.com' },
+    update: {},
+    create: {
+      name: 'Rahul Verma',
+      email: 'rahul@demo.com',
+      password: hashedPassword,
+      role: 'CAREGIVER',
+      city: 'Delhi',
+    }
+  })
+
+  // Link the user to Rahul Verma's sitter profile
+  await seedPrisma.sitter.update({
+    where: { id: 'sit_del_1' },
+    data: { userId: caregiverUser.id }
+  })
+
+  console.log('India-wide seeding and Rahul Verma Demo setup finished.')
 }
 
 main()
