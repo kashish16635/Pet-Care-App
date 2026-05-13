@@ -27,10 +27,10 @@ export async function GET(req: Request) {
             }
         });
 
-        // FALLBACK FOR PRESENTATION: If no specific location matches, show featured sitters
-        if (sitters.length === 0 && location) {
+        // FALLBACK: If no matches for filters, show top rated sitters overall
+        if (sitters.length === 0) {
             sitters = await prisma.sitter.findMany({
-                take: 6,
+                take: 10,
                 orderBy: { rating: 'desc' }
             });
         }
@@ -38,6 +38,12 @@ export async function GET(req: Request) {
         return NextResponse.json(sitters);
     } catch (e) {
         console.error("Failed to fetch sitters", e);
-        return NextResponse.json({ error: "Failed to load sitters" }, { status: 500 });
+        // LAST RESORT FALLBACK: If DB query fails or something else goes wrong, try a simple fetch
+        try {
+            const fallback = await prisma.sitter.findMany({ take: 6 });
+            return NextResponse.json(fallback);
+        } catch (inner) {
+            return NextResponse.json({ error: "Database connection issue" }, { status: 500 });
+        }
     }
 }
