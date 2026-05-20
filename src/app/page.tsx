@@ -1,4 +1,4 @@
-"use client";
+"use client"; //jab bhi user se interaction krna ho to use krte he 
 
 import Image from "next/image";
 import Link from "next/link";
@@ -7,14 +7,107 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
 import { ServiceCard } from "@/components/ui/ServiceCard";
-import { motion } from "framer-motion";
+import { motion, useMotionValue as motionValue, useSpring, useTransform } from "framer-motion";
+import { MouseEvent } from "react";
 import {
   Heart, ShieldCheck, MapPin, Clock, Search,
   CalendarCheck, MessageCircle, Star, Smartphone, Activity, PawPrint, Crown
 } from "lucide-react";
 
+function HeroImage() {
+  const x = motionValue(0);
+  const y = motionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
+  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["12deg", "-12deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-12deg", "12deg"]);
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="relative h-[450px] w-[450px] mx-auto lg:ml-auto"
+      style={{ perspective: 1200 }}
+    >
+      {/* Continuous floating animation wrapper */}
+      <motion.div
+        animate={{ y: [-10, 10, -10] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="w-full h-full"
+      >
+        <motion.div
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+          className="w-full h-full relative group"
+        >
+
+        
+        {/* Main image container */}
+        <motion.div 
+            style={{ transform: "translateZ(20px)" }}
+            className="absolute inset-0 flex items-center justify-center relative pointer-events-none mix-blend-multiply"
+        >
+          <video
+            src="/sticker-dog.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-contain scale-[1.2] mix-blend-multiply"
+          />
+        </motion.div>
+        
+        {/* Floating Badge - Subscription */}
+        <motion.div style={{ transform: "translateZ(80px)" }} className="absolute -bottom-6 -left-6 z-20">
+            <Link href="/subscription">
+            <motion.div
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl px-5 py-3.5 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-white dark:border-gray-800 cursor-pointer flex items-center gap-3"
+            >
+                <div className="relative">
+                <div className="absolute inset-0 bg-amber-500 rounded-full blur-lg opacity-20 hover:opacity-40 transition-opacity" />
+                <div className="relative h-10 w-10 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center shadow-sm">
+                    <Crown className="w-5 h-5 text-amber-600" />
+                </div>
+                </div>
+                <div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[12px] font-black text-gray-900 dark:text-white uppercase tracking-wider">Go Pro</span>
+                    <div className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse" />
+                </div>
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Exclusive Plans</p>
+                </div>
+            </motion.div>
+            </Link>
+        </motion.div>
+      </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session } = useSession();//janne ke liye ki user logged in hai ya nhi
 
   return (
     <div className="min-h-screen bg-background-soft font-sans">
@@ -66,44 +159,7 @@ export default function Home() {
               </motion.div>
 
               {/* Hero Image / Placeholder */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="relative h-[500px] w-full max-w-lg mx-auto lg:ml-auto"
-              >
-                <div className="absolute inset-0 bg-gradient-brand rounded-[3rem] rotate-3 opacity-20 dark:opacity-40 shadow-xl" />
-                <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-[3rem] -rotate-3 border border-gray-100 dark:border-gray-700 shadow-2xl overflow-hidden flex items-center justify-center relative">
-                  <img 
-                    src="https://images.unsplash.com/photo-1591160690555-5debfba289f0?q=80&w=800&auto=format&fit=crop" 
-                    alt="Cute golden retriever puppy" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Floating Badge - Subscription */}
-                <Link href="/subscription">
-                  <motion.div 
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="absolute -bottom-6 -left-6 bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl px-5 py-3.5 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-white dark:border-gray-800 cursor-pointer z-20 flex items-center gap-3 group"
-                  >
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-amber-500 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
-                      <div className="relative h-10 w-10 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center shadow-sm">
-                        <Crown className="w-5 h-5 text-amber-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-black text-gray-900 dark:text-white uppercase tracking-wider">Go Pro</span>
-                        <div className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse" />
-                      </div>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">Exclusive Plans</p>
-                    </div>
-                  </motion.div>
-                </Link>
-              </motion.div>
+              <HeroImage />
             </div>
           </div>
         </section>
@@ -193,7 +249,7 @@ export default function Home() {
                 >
                   <Link href={item.href} className="group block">
                     <div className="flex flex-col items-center">
-                      <motion.div 
+                      <motion.div
                         whileHover={{ y: -15, scale: 1.1, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
                         className="w-24 h-24 rounded-full bg-white dark:bg-gray-900 border-4 border-gray-50 dark:border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.05)] group-hover:shadow-[0_20px_40px_rgba(244,63,94,0.2)] flex items-center justify-center mb-6 text-primary-main group-hover:text-secondary-main group-hover:border-secondary-main/30 transition-all duration-300 z-10 relative"
@@ -202,7 +258,7 @@ export default function Home() {
                           {item.step}
                         </span>
                         <div className="group-hover:scale-110 transition-transform duration-300">
-                           {item.icon}
+                          {item.icon}
                         </div>
                       </motion.div>
                       <h3 className="font-heading font-black text-xl mb-2 text-gray-900 dark:text-white group-hover:text-primary-main transition-colors">{item.title}</h3>

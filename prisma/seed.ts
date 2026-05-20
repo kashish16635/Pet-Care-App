@@ -252,9 +252,11 @@ async function main() {
 
   const caregiverUser = await seedPrisma.user.upsert({
     where: { email: 'rahul@demo.com' },
-    update: {},
+    update: {
+      name: 'Rahul Verma [DEMO]'
+    },
     create: {
-      name: 'Rahul Verma',
+      name: 'Rahul Verma [DEMO]',
       email: 'rahul@demo.com',
       password: hashedPassword,
       role: 'CAREGIVER',
@@ -262,13 +264,33 @@ async function main() {
     }
   })
 
-  // Link the user to Rahul Verma's sitter profile
-  await seedPrisma.sitter.update({
-    where: { id: 'sit_del_1' },
-    data: { userId: caregiverUser.id }
+  // 1. Clear any existing links for this user
+  await seedPrisma.sitter.updateMany({
+    where: { userId: caregiverUser.id },
+    data: { userId: null }
   })
 
-  console.log('India-wide seeding and Rahul Verma Demo setup finished.')
+  // 2. Find the sitter to link
+  const sitterToLink = await seedPrisma.sitter.findFirst({
+    where: { 
+      OR: [
+        { id: 'cmpj3jilf0002ky04c9p2ohou' },
+        { name: { contains: 'Rahul', mode: 'insensitive' } }
+      ]
+    }
+  })
+
+  if (sitterToLink) {
+    await seedPrisma.sitter.update({
+      where: { id: sitterToLink.id },
+      data: { 
+        userId: caregiverUser.id,
+        name: 'Rahul Verma [DEMO]'
+      }
+    })
+  }
+
+  console.log('India-wide seeding and Rahul Verma [DEMO] setup finished.')
 }
 
 main()

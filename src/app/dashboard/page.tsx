@@ -239,6 +239,9 @@ function DashboardContent() {
                                 <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
                                     <Link href={`/tracking/${upcomingBooking.id}`}><Button size="sm" className="bg-indigo-600">Track</Button></Link>
                                     <Link href={`/videocall/${upcomingBooking.id}`}><Button size="sm">Call</Button></Link>
+                                    <Button size="sm" variant="outline" className="border-red-200 text-red-500 hover:bg-red-50" onClick={() => handleCancel(upcomingBooking.id)}>
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
                         </section>

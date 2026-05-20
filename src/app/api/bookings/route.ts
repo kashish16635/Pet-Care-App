@@ -95,3 +95,35 @@ export async function GET() {
         return NextResponse.json({ message: "Failed to fetch bookings" }, { status: 500 });
     }
 }
+export async function PATCH(req: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const body = await req.json();
+        const { bookingId, status } = body;
+
+        const updatedBooking = await prisma.booking.update({
+            where: { id: bookingId },
+            data: { status }
+        });
+
+        // Add a notification for the owner
+        await prisma.notification.create({
+            data: {
+                title: `Booking ${status}`,
+                message: `Your booking for ${updatedBooking.service} has been ${status.toLowerCase()}.`,
+                type: status === "Confirmed" ? "Success" : "Alert",
+                userId: updatedBooking.userId,
+                read: false
+            }
+        });
+
+        return NextResponse.json(updatedBooking);
+    } catch (error) {
+        console.error("Update booking error:", error);
+        return NextResponse.json({ message: "Failed to update booking" }, { status: 500 });
+    }
+}
