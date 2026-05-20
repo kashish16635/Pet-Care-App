@@ -16,24 +16,17 @@ export async function GET(req: Request) {
                         : { type: { contains: type === "boarding" ? "Boarding" : type === "walker" ? "Walker" : "Sitter", mode: 'insensitive' } }
                     ) : {},
                     location ? {
-                        OR: location.split(',').map(part => ({
-                            location: {
-                                contains: part.trim(),
-                                mode: 'insensitive'
-                            }
-                        }))
+                        location: {
+                            contains: location.split(',')[0].trim(),
+                            mode: 'insensitive'
+                        }
                     } : {}
                 ]
             }
         });
 
-        // FALLBACK: If no matches for filters, show top rated sitters overall
-        if (sitters.length === 0) {
-            sitters = await prisma.sitter.findMany({
-                take: 10,
-                orderBy: { rating: 'desc' }
-            });
-        }
+        // Removed confusing global fallback. If filters yield 0 results, we return an empty array.
+
         
         return NextResponse.json(sitters);
     } catch (e) {

@@ -16,7 +16,7 @@ export async function GET() {
         });
         
         // Fallback: If no direct link, find by name (for the demo)
-        if (!sitter && session.user.name.includes("Rahul")) {
+        if (!sitter && session.user?.name?.includes("Rahul")) {
             sitter = await prisma.sitter.findFirst({
                 where: { name: { contains: "Rahul", mode: "insensitive" } }
             });

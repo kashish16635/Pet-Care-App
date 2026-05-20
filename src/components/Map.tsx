@@ -28,9 +28,10 @@ interface MapProps {
     center?: [number, number];
     zoom?: number;
     onMarkerClick?: (provider: any) => void;
+    cityCoordinates: { [key: string]: [number, number] };
 }
 
-export default function Map({ providers, center = [20.5937, 78.9629], zoom = 5, onMarkerClick }: MapProps) {
+export default function Map({ providers, center = [20.5937, 78.9629], zoom = 5, onMarkerClick, cityCoordinates }: MapProps) {
     return (
         <MapContainer
             center={center}
@@ -49,15 +50,26 @@ export default function Map({ providers, center = [20.5937, 78.9629], zoom = 5, 
             />
 
             {providers.map((provider) => {
-                // Generate stable but random-looking coordinates around the city center
-                // In a real app, these would come from the database
+                // Find coordinates for the sitter's city
+                let sitterBasePos: [number, number] = center; // default to map center
+                
+                // Try to find the city in our coordinates map
+                const providerCity = Object.keys(cityCoordinates).find(city => 
+                    provider.location.toLowerCase().includes(city.split(',')[0].toLowerCase().trim())
+                );
+
+                if (providerCity) {
+                    sitterBasePos = cityCoordinates[providerCity];
+                }
+
+                // Generate stable but random-looking coordinates around the sitter's city
                 const seed = provider.id.charCodeAt(0) + provider.id.charCodeAt(provider.id.length - 1);
-                const latOffset = ((seed % 100) - 50) / 1000;
-                const lngOffset = (((seed * 7) % 100) - 50) / 1000;
+                const latOffset = ((seed % 100) - 50) / 1500; // slightly smaller spread
+                const lngOffset = (((seed * 7) % 100) - 50) / 1500;
                 
                 const position: [number, number] = [
-                    center[0] + latOffset,
-                    center[1] + lngOffset
+                    sitterBasePos[0] + latOffset,
+                    sitterBasePos[1] + lngOffset
                 ];
 
                 return (
@@ -70,10 +82,14 @@ export default function Map({ providers, center = [20.5937, 78.9629], zoom = 5, 
                         }}
                     >
                         <Popup>
-                            <div className="p-1">
+                            <div className="p-1 min-w-[120px]">
                                 <h3 className="font-bold text-sm">{provider.name}</h3>
-                                <p className="text-xs text-gray-500">{provider.type}</p>
-                                <p className="font-bold text-primary-main mt-1">₹{provider.price}</p>
+                                <p className="text-[10px] text-gray-500">{provider.type}</p>
+                                <p className="text-[10px] text-gray-400 italic mb-1">{provider.location}</p>
+                                <div className="flex justify-between items-center mt-2 border-t pt-1 border-gray-100">
+                                    <span className="font-bold text-primary-main text-xs">₹{provider.price}</span>
+                                    <span className="text-[10px] bg-gray-50 px-1.5 py-0.5 rounded">⭐ {provider.rating}</span>
+                                </div>
                             </div>
                         </Popup>
                     </Marker>

@@ -10,6 +10,68 @@ import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
 import { Search, MapPin, Calendar, Star, ShieldCheck, Filter, X, Plus, Minus } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
+const Map = dynamic(() => import("@/components/Map"), { 
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-gray-100 dark:bg-gray-800 animate-pulse flex items-center justify-center text-gray-400">Loading Interactive Map...</div>
+});
+
+const CITY_COORDINATES: { [key: string]: [number, number] } = {
+    "Mumbai, Maharashtra": [19.0760, 72.8777],
+    "Delhi, Delhi": [28.6139, 77.2090],
+    "Bangalore, Karnataka": [12.9716, 77.5946],
+    "Hyderabad, Telangana": [17.3850, 78.4867],
+    "Ahmedabad, Gujarat": [23.0225, 72.5714],
+    "Chennai, Tamil Nadu": [13.0827, 80.2707],
+    "Kolkata, West Bengal": [22.5726, 88.3639],
+    "Surat, Gujarat": [21.1702, 72.8311],
+    "Pune, Maharashtra": [18.5204, 73.8567],
+    "Jaipur, Rajasthan": [26.9124, 75.7873],
+    "Lucknow, Uttar Pradesh": [26.8467, 80.9462],
+    "Kanpur, Uttar Pradesh": [26.4499, 80.3319],
+    "Nagpur, Maharashtra": [21.1458, 79.0882],
+    "Indore, Madhya Pradesh": [22.7196, 75.8577],
+    "Thane, Maharashtra": [19.2183, 72.9781],
+    "Bhopal, Madhya Pradesh": [23.2599, 77.4126],
+    "Visakhapatnam, Andhra Pradesh": [17.6868, 83.2185],
+    "Pimpri-Chinchwad, Maharashtra": [18.6298, 73.7997],
+    "Patna, Bihar": [25.5941, 85.1376],
+    "Vadodara, Gujarat": [22.3072, 73.1812],
+    "Ghaziabad, Uttar Pradesh": [28.6692, 77.4538],
+    "Ludhiana, Punjab": [30.9010, 75.8573],
+    "Agra, Uttar Pradesh": [27.1767, 78.0081],
+    "Nashik, Maharashtra": [19.9975, 73.7898],
+    "Faridabad, Haryana": [28.4089, 77.3178],
+    "Meerut, Uttar Pradesh": [28.9845, 77.7064],
+    "Rajkot, Gujarat": [22.3039, 70.8022],
+    "Varanasi, Uttar Pradesh": [25.3176, 82.9739],
+    "Srinagar, Jammu and Kashmir": [34.0837, 74.7973],
+    "Aurangabad, Maharashtra": [19.8762, 75.3433],
+    "Dhanbad, Jharkhand": [23.7957, 86.4304],
+    "Amritsar, Punjab": [31.6340, 74.8723],
+    "Navi Mumbai, Maharashtra": [19.0330, 73.0297],
+    "Allahabad, Uttar Pradesh": [25.4358, 81.8463],
+    "Ranchi, Jharkhand": [23.3441, 85.3096],
+    "Gwalior, Madhya Pradesh": [26.2124, 78.1772],
+    "Jabalpur, Madhya Pradesh": [23.1815, 79.9864],
+    "Coimbatore, Tamil Nadu": [11.0168, 76.9558],
+    "Vijayawada, Andhra Pradesh": [16.5062, 80.6480],
+    "Jodhpur, Rajasthan": [26.2389, 73.0243],
+    "Madurai, Tamil Nadu": [9.9252, 78.1198],
+    "Raipur, Chhattisgarh": [21.2514, 81.6296],
+    "Kota, Rajasthan": [25.2138, 75.8648],
+    "Guwahati, Assam": [26.1445, 91.7362],
+    "Chandigarh, Chandigarh": [30.7333, 76.7794],
+    "Ujjain, Madhya Pradesh": [23.1760, 75.7885],
+    "Gurgaon, Haryana": [28.4595, 77.0266],
+    "Noida, Uttar Pradesh": [28.5355, 77.3910],
+    "Dehradun, Uttarakhand": [30.3165, 78.0322],
+    "Kochi, Kerala": [9.9312, 76.2673],
+    "Bhubaneswar, Odisha": [20.2961, 85.8245],
+    "Mysore, Karnataka": [12.2958, 76.6394],
+    "Udaipur, Rajasthan": [24.5854, 73.7125],
+};
 
 const INDIAN_CITIES = [
   "Mumbai, Maharashtra", "Delhi, Delhi", "Bangalore, Karnataka", "Hyderabad, Telangana",
@@ -100,11 +162,11 @@ export default function SearchPage() {
             if (sortBy === "price-high") return b.price - a.price;
             if (sortBy === "rating") return b.rating - a.rating;
             
-            // Default: Recommended (City Match first)
-            if (!userCity) return 0;
-            const cleanUserCity = userCity.split(',')[0].trim().toLowerCase();
-            const aMatches = a.location.toLowerCase().includes(cleanUserCity);
-            const bMatches = b.location.toLowerCase().includes(cleanUserCity);
+            // Default: Recommended (Search City Match first)
+            if (!locationSearch) return 0;
+            const cleanSearchCity = locationSearch.split(',')[0].trim().toLowerCase();
+            const aMatches = a.location.toLowerCase().includes(cleanSearchCity);
+            const bMatches = b.location.toLowerCase().includes(cleanSearchCity);
             if (aMatches && !bMatches) return -1;
             if (!aMatches && bMatches) return 1;
             return 0;
@@ -315,99 +377,17 @@ export default function SearchPage() {
                         ))}
                     </div>
 
-                    {/* RIGHT: GOOGLE MAPS REPLICA VIEW */}
-                    <div className="lg:col-span-2 hidden lg:block sticky top-24 h-[calc(100vh-120px)] rounded-[2.5rem] overflow-hidden bg-[#e5e3df] dark:bg-gray-950 border border-gray-200 dark:border-gray-800 relative shadow-xl">
-                        
-                        {/* Map Background Layer (Scalable) */}
-                        <motion.div 
-                            animate={{ scale: zoomLevel }}
-                            transition={{ type: "spring", stiffness: 100, damping: 25 }}
-                            className="absolute inset-0 origin-center"
-                        >
-                            {/* Water Bodies (Blue areas) */}
-                            <div className="absolute top-[10%] left-[-10%] w-[60%] h-[40%] bg-[#aad3df] dark:bg-blue-900/30 rounded-[50%_30%_60%_40%] blur-sm" />
-                            <div className="absolute top-[60%] right-[-10%] w-[50%] h-[50%] bg-[#aad3df] dark:bg-blue-900/30 rounded-[40%_60%_30%_50%] blur-sm" />
-                            <div className="absolute top-[40%] left-[45%] w-[100px] h-[300px] bg-[#aad3df] dark:bg-blue-900/30 -rotate-12 blur-sm" />
+                    {/* RIGHT: REAL GOOGLE MAPS VIEW */}
+                    <div className="lg:col-span-2 hidden lg:block sticky top-24 h-[calc(100vh-120px)] rounded-[2.5rem] overflow-hidden bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 relative shadow-xl z-10">
+                        <Map 
+                            providers={filteredAndSortedProviders}
+                            center={CITY_COORDINATES[locationSearch] || [20.5937, 78.9629]}
+                            zoom={locationSearch ? 12 : 5}
+                            onMarkerClick={(provider) => setSelectedProvider(provider)}
+                            cityCoordinates={CITY_COORDINATES}
+                        />
 
-                            {/* Land Background with Subtle Grid */}
-                            <div className="absolute inset-0 opacity-[0.05]" 
-                                 style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-
-                            {/* Street Lines */}
-                            <div className="absolute top-[30%] left-0 w-full h-[1px] bg-white dark:bg-gray-800 shadow-sm" />
-                            <div className="absolute top-[50%] left-0 w-full h-[1px] bg-white dark:bg-gray-800 shadow-sm" />
-                            <div className="absolute left-[30%] top-0 h-full w-[1px] bg-white dark:bg-gray-800 shadow-sm" />
-                            <div className="absolute left-[70%] top-0 h-full w-[1px] bg-white dark:bg-gray-800 shadow-sm" />
-
-                            {/* Map Labels (Replica Style) */}
-                            <div className="absolute top-[15%] left-[20%] flex flex-col items-center">
-                                <div className="w-2 h-2 rounded-full bg-green-500 mb-1" />
-                                <span className="text-[8px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Green Park Reserve</span>
-                            </div>
-                            <div className="absolute top-[42%] left-[48%] flex flex-col items-center rotate-[-12deg]">
-                                <span className="text-[10px] font-bold text-blue-600/60 dark:text-blue-400/40 uppercase tracking-widest">Sydney Harbour Bridge</span>
-                            </div>
-                            <div className="absolute top-[65%] right-[20%] flex flex-col items-center">
-                                <div className="w-2 h-2 rounded-full bg-blue-500 mb-1" />
-                                <span className="text-[8px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Opera House Plaza</span>
-                            </div>
-                            <div className="absolute bottom-[15%] left-[30%] flex flex-col items-center">
-                                <div className="w-2 h-2 rounded-full bg-orange-400 mb-1" />
-                                <span className="text-[8px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tighter">Luna Park</span>
-                            </div>
-
-                            {/* Sitter Pins - Google Red Teardrop Style */}
-                            {filteredAndSortedProviders.map((provider, idx) => {
-                                const seed = provider.id.charCodeAt(0) + provider.id.charCodeAt(provider.id.length-1);
-                                const top = 20 + (seed % 60); 
-                                const left = 20 + ((seed * 7) % 60); 
-
-                                return (
-                                    <motion.div
-                                        key={provider.id}
-                                        initial={{ y: -20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        transition={{ delay: idx * 0.1 }}
-                                        style={{ top: `${top}%`, left: `${left}%` }}
-                                        className="absolute cursor-pointer group"
-                                        onClick={() => setSelectedProvider(provider)}
-                                    >
-                                        <div className="relative flex flex-col items-center">
-                                            {/* Classic Google Red Pin SVG */}
-                                            <svg width="24" height="34" viewBox="0 0 24 34" fill="none" xmlns="http://www.w3.org/2000/svg" className={`drop-shadow-md transition-transform group-hover:scale-110 ${selectedProvider?.id === provider.id ? 'scale-125' : ''}`}>
-                                                <path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 34 12 34C12 34 24 21 24 12C24 5.37 18.63 0 12 0ZM12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16Z" fill={selectedProvider?.id === provider.id ? "#ea4335" : "#ea4335"} />
-                                                <circle cx="12" cy="12" r="3" fill="white" />
-                                            </svg>
-                                            
-                                            {/* Price Label (Floating above pin) */}
-                                            <div className="absolute -top-6 bg-white dark:bg-gray-800 px-2 py-0.5 rounded shadow-sm border border-gray-100 dark:border-gray-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <span className="text-[10px] font-bold text-gray-900 dark:text-white leading-none whitespace-nowrap">₹{provider.price}</span>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
-
-                        {/* Map UI Elements (Replica) */}
-                        <div className="absolute top-4 left-4 flex shadow-sm rounded border border-gray-300 dark:border-gray-700 overflow-hidden z-50">
-                            <button className="bg-white dark:bg-gray-900 px-3 py-1.5 text-[11px] font-bold text-gray-700 dark:text-gray-200 border-r border-gray-200 dark:border-gray-800 hover:bg-gray-50 transition-colors">Map</button>
-                            <button className="bg-white/80 dark:bg-gray-900/80 px-3 py-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-600 hover:bg-gray-50 transition-colors">Satellite</button>
-                        </div>
-
-                        <button className="absolute top-4 right-4 w-10 h-10 bg-white dark:bg-gray-900 rounded shadow-md border border-gray-200 dark:border-gray-800 flex items-center justify-center z-50">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                        </button>
-
-                        {/* Zoom & Pegman Panel */}
-                        <div className="absolute bottom-10 right-4 flex flex-col gap-0 shadow-md rounded border border-gray-300 dark:border-gray-700 overflow-hidden z-50 bg-white dark:bg-gray-900">
-                            {/* Pegman */}
-                            <div className="w-10 h-10 flex items-center justify-center border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 cursor-pointer group">
-                                <div className="w-4 h-8 bg-[#f4bc42] rounded-full group-hover:scale-110 transition-transform" />
-                            </div>
-                            <button onClick={() => setZoomLevel(prev => Math.min(prev + 0.2, 2.5))} className="w-10 h-10 flex items-center justify-center border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 text-xl text-gray-600">+</button>
-                            <button onClick={() => setZoomLevel(prev => Math.max(prev - 0.2, 0.5))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-xl text-gray-600">-</button>
-                        </div>
+                        {/* Detail Popover */}
 
                         {/* Detail Popover (Same logic) */}
                         <AnimatePresence>
