@@ -44,7 +44,7 @@ function HeroImage() {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="relative h-[450px] w-[450px] mx-auto lg:ml-auto"
+      className="relative w-[300px] h-[300px] md:w-[450px] md:h-[450px] mx-auto lg:ml-auto"
       style={{ perspective: 1200 }}
     >
       {/* Continuous floating animation wrapper */}
@@ -72,7 +72,7 @@ function HeroImage() {
             loop
             muted
             playsInline
-            className="w-full h-full object-contain scale-[1.2] mix-blend-multiply"
+            className="w-full h-full object-contain mix-blend-multiply drop-shadow-2xl"
           />
         </motion.div>
         
