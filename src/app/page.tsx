@@ -15,56 +15,14 @@ import {
 } from "lucide-react";
 
 function HeroImage() {
-  const x = motionValue(0);
-  const y = motionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["12deg", "-12deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-12deg", "12deg"]);
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    x.set(mouseX / width - 0.5);
-    y.set(mouseY / height - 0.5);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
-      className="relative w-[300px] h-[300px] md:w-[450px] md:h-[450px] mx-auto lg:ml-auto"
-      style={{ perspective: 1200 }}
-    >
-      {/* Continuous floating animation wrapper */}
-      <motion.div
-        animate={{ y: [-10, 10, -10] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="w-full h-full"
-      >
+    <div className="relative w-[300px] h-[300px] md:w-[450px] md:h-[450px] mx-auto lg:ml-auto">
+      {/* Dog Animation Wrapper - NO OPACITY SO NO STACKING CONTEXT! */}
+      <div className="w-full h-full absolute inset-0 mix-blend-multiply">
         <motion.div
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-          className="w-full h-full relative group"
-        >
-
-        
-        {/* Main image container */}
-        <motion.div 
-            style={{ transform: "translateZ(20px)" }}
-            className="absolute inset-0 flex items-center justify-center relative pointer-events-none mix-blend-multiply"
+          animate={{ y: [-5, 5, -5] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="w-full h-full flex items-center justify-center pointer-events-none mix-blend-multiply"
         >
           <video
             src="/sticker-dog.mp4"
@@ -72,12 +30,23 @@ function HeroImage() {
             loop
             muted
             playsInline
-            className="w-full h-full object-contain mix-blend-multiply drop-shadow-2xl"
+            className="w-[120%] h-[120%] object-contain mix-blend-multiply"
+            style={{ filter: "contrast(1.1) brightness(1.05)" }}
           />
         </motion.div>
-        
-        {/* Floating Badge - Subscription */}
-        <motion.div style={{ transform: "translateZ(80px)" }} className="absolute -bottom-6 -left-6 z-20">
+      </div>
+      
+      {/* Floating Badge - Subscription (Separate so it doesn't blend) */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="absolute -bottom-2 -left-6 z-20"
+      >
+        <motion.div 
+          animate={{ y: [-5, 5, -5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        >
             <Link href="/subscription">
             <motion.div
                 whileHover={{ scale: 1.05, y: -5 }}
@@ -101,8 +70,7 @@ function HeroImage() {
             </Link>
         </motion.div>
       </motion.div>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -117,11 +85,11 @@ export default function Home() {
         {/* --- HERO SECTION --- */}
         <section className="relative overflow-hidden bg-gradient-to-b from-primary-light/50 to-white dark:from-gray-900 dark:to-background pt-20 pb-32">
           {/* Background Blob Elements */}
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3">
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 -z-10">
             <div className="w-[600px] h-[600px] rounded-full bg-gradient-to-bl from-primary-light to-secondary-light dark:from-primary-dark/30 dark:to-secondary-dark/30 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-lighten" />
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}

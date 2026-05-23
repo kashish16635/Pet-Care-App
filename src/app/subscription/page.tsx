@@ -6,12 +6,13 @@ import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
-import { Check, Star, Shield, Zap, Crown, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, Star, Shield, Zap, Crown, ArrowRight, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SubscriptionPage() {
     const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" or "yearly"
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<any>(null);
     const router = useRouter();
 
     const { update } = useSession();
@@ -26,6 +27,7 @@ export default function SubscriptionPage() {
                 await update();
                 
                 setIsProcessing(false);
+                setSelectedPlan(null);
                 alert(`Payment Successful! You are now a ${planName} member.`);
                 router.push("/dashboard?success=true&pro=true");
             } else {
@@ -97,12 +99,70 @@ export default function SubscriptionPage() {
         <div className="min-h-screen bg-[#FDFCFB] dark:bg-gray-950 font-sans selection:bg-rose-100 selection:text-rose-900">
             {/* Payment Loading Overlay */}
             {isProcessing && (
-                <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/80 dark:bg-gray-950/80 backdrop-blur-md">
+                <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-white/80 dark:bg-gray-950/80 backdrop-blur-md">
                     <div className="w-16 h-16 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-6" />
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tighter animate-pulse">Securing Payment...</h2>
                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Connecting to Gateway</p>
                 </div>
             )}
+            
+            {/* Payment Modal */}
+            <AnimatePresence>
+                {selectedPlan && !isProcessing && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setSelectedPlan(null)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800"
+                        >
+                            <button onClick={() => setSelectedPlan(null)} className="absolute top-6 right-6 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tighter mb-2">Complete Payment</h2>
+                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">You are upgrading to {selectedPlan.name}</p>
+                            
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 border border-gray-100 dark:border-gray-700">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Plan</span>
+                                    <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{selectedPlan.name}</span>
+                                </div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Billing Cycle</span>
+                                    <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{billingCycle}</span>
+                                </div>
+                                <div className="h-px bg-gray-200 dark:bg-gray-700 my-3" />
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Total</span>
+                                    <span className="text-xl font-black text-rose-500 tracking-tighter">₹{selectedPlan.price}</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 mb-8">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 block ml-1">Card Information</label>
+                                    <input type="text" placeholder="Card Number" className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-t-2xl rounded-b-sm p-4 text-sm font-bold mb-1 outline-none focus:ring-2 focus:ring-rose-500" />
+                                    <div className="flex gap-1">
+                                        <input type="text" placeholder="MM/YY" className="w-1/2 bg-gray-50 dark:bg-gray-800 border-none rounded-bl-2xl rounded-tr-sm p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500" />
+                                        <input type="text" placeholder="CVC" className="w-1/2 bg-gray-50 dark:bg-gray-800 border-none rounded-br-2xl rounded-tl-sm p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 block ml-1">Name on Card</label>
+                                    <input type="text" placeholder="Full Name" className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-rose-500" />
+                                </div>
+                            </div>
+
+                            <Button onClick={() => handleUpgrade(selectedPlan.name)} className="w-full py-6 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-xs">
+                                Pay ₹{selectedPlan.price}
+                            </Button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
             
             <Navbar />
 
@@ -213,7 +273,7 @@ export default function SubscriptionPage() {
                                 </div>
 
                                 <Button 
-                                    onClick={() => plan.id !== 'basic' && handleUpgrade(plan.name)}
+                                    onClick={() => plan.id !== 'basic' && setSelectedPlan(plan)}
                                     className={`w-full py-8 rounded-[1.8rem] font-black uppercase tracking-widest text-[10px] transition-all h-auto group-hover:shadow-2xl ${plan.highlight ? 'bg-gray-900 text-white dark:bg-white dark:text-black hover:scale-[1.02]' : 'bg-gray-50 dark:bg-gray-900 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                                 >
                                     {plan.buttonText}

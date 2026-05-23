@@ -8,7 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { Search, MapPin, Calendar, Star, ShieldCheck, Filter, X, Plus, Minus } from "lucide-react";
+import { Search, MapPin, Calendar, Star, ShieldCheck, Filter, X, Plus, Minus, Crown } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
@@ -116,6 +116,7 @@ export default function SearchPage() {
     const [minRating, setMinRating] = useState<number>(0);
     const [sortBy, setSortBy] = useState<string>("recommended");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isEmergency, setIsEmergency] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -154,9 +155,44 @@ export default function SearchPage() {
         handleSearch();
     }, [serviceType]);
 
+    // Helper to mock availability data for now
+    const augmentProvider = (p: any) => {
+        const nameLower = p.name.toLowerCase();
+        
+        // Rahul Verma is ALWAYS Open
+        if (nameLower.includes("rahul")) {
+            return { ...p, is24x7: false, openTime: "00:00", closeTime: "23:59" };
+        }
+        
+        const is24x7 = p.name.length % 2 === 0; // ~50% are 24/7 for a good list representation
+        
+        // Mixed working hours for variety
+        let openTime = "08:00";
+        let closeTime = "20:00";
+        
+        if (p.name.length % 3 === 1) {
+            closeTime = "23:59"; // Open late
+        } else if (p.name.length % 3 === 2) {
+            closeTime = "18:00"; // Closed early (already closed)
+        }
+        
+        return { ...p, is24x7, openTime, closeTime };
+    };
+
+    const isOpen = (provider: any) => {
+        if (provider.is24x7) return true;
+        const now = new Date();
+        const currentTime = now.getHours() + now.getMinutes() / 60;
+        const [openH, openM] = provider.openTime.split(':').map(Number);
+        const [closeH, closeM] = provider.closeTime.split(':').map(Number);
+        return currentTime >= (openH + openM / 60) && currentTime <= (closeH + closeM / 60);
+    };
+
     // Apply Filters and Sorting
     const filteredAndSortedProviders = [...providers]
+        .map(augmentProvider)
         .filter(p => p.price <= priceRange && p.rating >= minRating)
+        .filter(p => isEmergency ? p.is24x7 : true)
         .sort((a, b) => {
             if (sortBy === "price-low") return a.price - b.price;
             if (sortBy === "price-high") return b.price - a.price;
@@ -254,7 +290,49 @@ export default function SearchPage() {
                             <h2 className="text-xl font-heading font-bold text-gray-900 dark:text-white">
                                 {loading ? "Searching..." : `${providers.length} caregivers found`}
                             </h2>
-                            <div className="relative">
+                            <div className="flex items-center gap-3 relative">
+                                <button 
+                                    onClick={() => setIsEmergency(!isEmergency)}
+                                    className={`backdrop-blur-xl px-4 py-2.5 rounded-[2rem] border transition-all cursor-pointer flex items-center gap-2.5 shadow-[0_10px_25px_rgba(0,0,0,0.05)] text-left outline-none ${
+                                        isEmergency 
+                                        ? 'bg-amber-500 border-amber-500 text-white shadow-[0_10px_25px_rgba(245,158,11,0.3)] hover:bg-amber-600' 
+                                        : 'bg-white/95 dark:bg-gray-900/95 border-white dark:border-gray-800 text-gray-900 dark:text-white hover:scale-[1.02]'
+                                    }`}
+                                >
+                                    {isEmergency ? (
+                                        <>
+                                            <div className="relative shrink-0">
+                                                <div className="relative h-8 w-8 bg-white/20 rounded-full flex items-center justify-center shadow-sm">
+                                                    <span className="text-xs font-bold text-white">✕</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider text-white">Emergency Active</span>
+                                                    <div className="flex h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                                                </div>
+                                                <p className="text-[7.5px] font-black text-amber-100 uppercase tracking-[0.15em] mt-0.5">Click to Reset</p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="relative shrink-0">
+                                                <div className="absolute inset-0 bg-amber-500 rounded-full blur-md opacity-25" />
+                                                <div className="relative h-8 w-8 bg-amber-50 dark:bg-amber-900/30 rounded-full flex items-center justify-center shadow-sm">
+                                                    <Crown className="w-4 h-4 text-amber-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider text-gray-900 dark:text-white">24/7 Emergency</span>
+                                                    <div className="flex h-1.5 w-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)] animate-pulse" />
+                                                </div>
+                                                <p className="text-[7.5px] font-black text-gray-400 uppercase tracking-[0.15em] mt-0.5">Immediate Help</p>
+                                            </div>
+                                        </>
+                                    )}
+                                </button>
+
                                 <Button 
                                     variant="outline" 
                                     size="sm" 
@@ -316,6 +394,8 @@ export default function SearchPage() {
                                                     </select>
                                                 </div>
 
+
+
                                                 <Button 
                                                     className="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest"
                                                     onClick={() => setIsFilterOpen(false)}
@@ -346,9 +426,21 @@ export default function SearchPage() {
                                 <div className="flex-1 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <div className="flex items-center gap-2 mb-1">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                 <h3 className="text-lg font-bold font-heading text-gray-900 dark:text-white group-hover:text-primary-main transition-colors">{provider.name}</h3>
                                                 {provider.verified && <ShieldCheck className="w-4 h-4 text-green-500" />}
+                                                
+                                                {/* Availability Badge */}
+                                                {provider.is24x7 ? (
+                                                    <span className="ml-2 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black uppercase tracking-widest border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                                        <Crown className="w-2.5 h-2.5 text-amber-600 fill-amber-600" />
+                                                        24/7 Available
+                                                    </span>
+                                                ) : isOpen(provider) ? (
+                                                    <span className="ml-2 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[9px] font-black uppercase tracking-widest border border-green-200 dark:border-green-800">🟢 Open Now</span>
+                                                ) : (
+                                                    <span className="ml-2 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[9px] font-black uppercase tracking-widest border border-gray-200 dark:border-gray-700">🔴 Closed</span>
+                                                )}
                                             </div>
                                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{provider.type}</p>
                                             <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">

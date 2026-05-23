@@ -68,6 +68,8 @@ function DashboardContent() {
     useEffect(() => {
         if (status === "authenticated") {
             fetchDashboardData();
+        } else if (status === "unauthenticated") {
+            setLoading(false);
         }
     }, [status]);
 
@@ -94,6 +96,18 @@ function DashboardContent() {
         localStorage.setItem("petHealthRecords", JSON.stringify(updated));
         setShowHealthModal(false);
         setNewRecord({ type: "vaccine", name: "", date: "", desc: "" });
+    };
+
+    const deleteHealthRecord = (type: 'vaccine' | 'medical', id: number) => {
+        if (!confirm("Are you sure you want to delete this record?")) return;
+        const updated = { ...healthRecords };
+        if (type === 'vaccine') {
+            updated.vaccines = updated.vaccines.filter(v => v.id !== id);
+        } else {
+            updated.medical = updated.medical.filter(m => m.id !== id);
+        }
+        setHealthRecords(updated);
+        localStorage.setItem("petHealthRecords", JSON.stringify(updated));
     };
 
     const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,9 +292,14 @@ function DashboardContent() {
                                 <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Zap className="w-3.5 h-3.5 text-orange-500" /> Vaccination Tracker</h3>
                                 <div className="space-y-3">
                                     {healthRecords.vaccines.map((v: any) => (
-                                        <div key={v.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800">
+                                        <div key={v.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 group transition-all">
                                             <div><p className="text-sm font-bold text-gray-900 dark:text-white">{v.name}</p><p className="text-[10px] text-gray-400 font-bold uppercase">Due: {v.date}</p></div>
-                                            <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${v.color === 'orange' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>{v.status}</span>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${v.color === 'orange' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>{v.status}</span>
+                                                <button onClick={() => deleteHealthRecord('vaccine', v.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -289,9 +308,14 @@ function DashboardContent() {
                                 <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-blue-500" /> Recent Records</h3>
                                 <div className="space-y-3">
                                     {healthRecords.medical.map((m: any) => (
-                                        <div key={m.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 flex gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-blue-500 shadow-sm"><CheckCircle2 className="w-5 h-5" /></div>
-                                            <div><p className="text-sm font-bold text-gray-900 dark:text-white">{m.title}</p><p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-1">{m.desc}</p><p className="text-[9px] text-gray-400 font-black uppercase mt-2">{m.date}</p></div>
+                                        <div key={m.id} className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-800 flex justify-between items-center group transition-all">
+                                            <div className="flex gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center text-blue-500 shadow-sm"><CheckCircle2 className="w-5 h-5" /></div>
+                                                <div><p className="text-sm font-bold text-gray-900 dark:text-white">{m.title}</p><p className="text-[10px] text-gray-500 font-medium leading-relaxed mt-1">{m.desc}</p><p className="text-[9px] text-gray-400 font-black uppercase mt-2">{m.date}</p></div>
+                                            </div>
+                                            <button onClick={() => deleteHealthRecord('medical', m.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

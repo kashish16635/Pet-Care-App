@@ -54,7 +54,12 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 router.push(`/payment?bookingId=${data.booking.id}&amount=800`);
             } else {
                 const data = await res.json();
-                alert(data.message || "Booking failed");
+                if (data.limitReached) {
+                    // Redirect to subscription page when the free limit is reached
+                    router.push("/subscription");
+                } else {
+                    alert(data.message || "Booking failed");
+                }
             }
         } catch (error) {
             console.error("Booking error:", error);
