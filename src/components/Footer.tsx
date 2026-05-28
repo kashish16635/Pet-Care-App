@@ -53,7 +53,7 @@ export function Footer() {
                             <li><Link href="/#how-it-works" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">How it Works</Link></li>
                             <li><Link href="/#trust" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Trust & Safety</Link></li>
                             <li><Link href="/search" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Careers</Link></li>
-                            <li><Link href="mailto:hello@pawsandcare.com" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Contact</Link></li>
+                            <li><Link href="mailto:pawsandcare@gmail.com" className="text-gray-500 dark:text-gray-400 hover:text-primary-main text-sm transition-colors font-medium">Contact</Link></li>
                         </ul>
                     </div>
 
@@ -63,18 +63,18 @@ export function Footer() {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-sm text-gray-500 dark:text-gray-400">
                                 <MapPin className="w-5 h-5 text-primary-main shrink-0" />
-                                <span className="font-medium">123 Pet Avenue, Suite 100<br />New York, NY 10001</span>
+                                <span className="font-medium">Indore, Madhya Pradesh,<br />India</span>
                             </li>
                             <li>
-                                <a href="tel:+18001237297" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
+                                <a href="tel:+919876543210" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
                                     <Phone className="w-5 h-5 text-primary-main shrink-0" />
-                                    <span>+1 (800) 123-PAWS</span>
+                                    <span>+91 98765 43210</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="mailto:hello@pawsandcare.com" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
+                                <a href="mailto:pawsandcare@gmail.com" className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-main transition-colors font-medium">
                                     <Mail className="w-5 h-5 text-primary-main shrink-0" />
-                                    <span>hello@pawsandcare.com</span>
+                                    <span>pawsandcare@gmail.com</span>
                                 </a>
                             </li>
                         </ul>
