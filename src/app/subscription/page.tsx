@@ -186,7 +186,7 @@ export default function SubscriptionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-3"
                     >
-                        Choose the Perfect <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500">Plan for Your Pet</span>
+                        Elevate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-500">Pet's Life</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 15 }}
@@ -281,7 +281,7 @@ export default function SubscriptionPage() {
 
                                 <Button 
                                     onClick={() => plan.id !== 'basic' && setSelectedPlan(plan)}
-                                    className="w-full py-2.5 rounded-xl font-bold tracking-wider text-[10px] transition-all h-auto flex items-center justify-center gap-1.5 shadow-sm bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:opacity-90 hover:scale-[1.01]"
+                                    className={`w-full py-2.5 rounded-xl font-bold tracking-wider text-[10px] transition-all h-auto flex items-center justify-center gap-1.5 shadow-sm ${plan.highlight ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:opacity-90 hover:scale-[1.01]' : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'}`}
                                 >
                                     {plan.buttonText}
                                     {plan.id !== "basic" && <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />}
