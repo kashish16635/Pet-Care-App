@@ -10,7 +10,7 @@
 
 **A sophisticated, full-stack pet care marketplace connecting pet owners with verified caregivers.**
 
-[✨ Live Demo](https://pet-care-app-five.vercel.app/) • [🛠️ Setup Guide](#-getting-started) • [📋 Features](#-key-features)
+[✨ Live Demo](https://pet-care-app-sigma.vercel.app) • [🛠️ Setup Guide](#-getting-started) • [📋 Features](#-key-features)
 
 </div>
 
