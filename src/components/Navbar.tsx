@@ -401,10 +401,10 @@ export function Navbar() {
                                 </>
                             ) : (
                                 <>
-                                    <Link href="/login" className="w-full">
+                                    <Link onClick={() => setIsOpen(false)} href="/login" className="w-full">
                                         <Button variant="outline" className="w-full font-bold">Log in</Button>
                                     </Link>
-                                    <Link href="/signup" className="w-full">
+                                    <Link onClick={() => setIsOpen(false)} href="/signup" className="w-full">
                                         <Button className="w-full bg-gradient-brand font-bold text-white">Sign Up</Button>
                                     </Link>
                                 </>
